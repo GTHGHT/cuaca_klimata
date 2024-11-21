@@ -92,11 +92,11 @@ class Weathers extends ChangeNotifier {
     }
   }
 
-  Future<void> updateCityWeather(String city) async {
+  Future<WeatherCode> updateCityWeather(String city) async {
     WeatherIntegration? wi = _weatherIntegration;
     if (wi != null) {
       if (city.isEmpty) {
-        return;
+        return WeatherCode.none;
       }
       loading = true;
       notifyListeners();
@@ -109,6 +109,8 @@ class Weathers extends ChangeNotifier {
       currentWeather = cityWeather;
       loading = false;
       notifyListeners();
+      return cityWeather.weatherCode;
     }
+    return WeatherCode.none;
   }
 }

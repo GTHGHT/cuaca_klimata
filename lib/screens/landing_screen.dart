@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import 'package:cuaca_klimata/screens/forecast_screen.dart';
+import 'package:cuaca_klimata/services/color_scheme_notifier.dart';
+import 'package:cuaca_klimata/services/data_class/weather_code.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -150,7 +151,8 @@ class _LandingScreenState extends State<LandingScreen>
                             .updateCurrentLocationWeather()
                             .then((value) {
                               if(context.mounted){
-
+                                context.read<ColorSchemeNotifier>().colorScheme = value.colorScheme;
+                                context.read<ColorSchemeNotifier>().darkColorScheme = value.darkColorScheme;
                               }
                         });
                         //     .catchError((e) {

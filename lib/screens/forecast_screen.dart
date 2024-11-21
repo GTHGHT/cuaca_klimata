@@ -1,12 +1,11 @@
 import 'package:cuaca_klimata/utilities/double_extension.dart';
-
-import '../screens/loading_widget.dart';
-import '../services/data_class/weather_code.dart';
-import '../services/data_class/weather_forecast.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../screens/loading_widget.dart';
+import '../services/data_class/weather_code.dart';
+import '../services/data_class/weather_forecast.dart';
 import '../services/weathers.dart';
 import '../utilities/constants.dart';
 
@@ -16,10 +15,11 @@ class ForecastScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         // elevation: 0,
         centerTitle: true,
-        backgroundColor: kScaffoldBGColor,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
         title: Text(
           DateFormat("EEEE, d MMMM y").format(DateTime.now()).toString(),
         ),
@@ -49,11 +49,15 @@ class ForecastScreen extends StatelessWidget {
                           .watch<Weathers>()
                           .weatherForecast
                           ?.hourlyForecast[index];
-
                       return HourForecastGrid(
-                        weatherIcon: hourForecast?.weatherCode.weatherIconLocation ?? "images/dust_white.png",
+                        weatherIcon:
+                            hourForecast?.weatherCode.weatherIconLocation ??
+                                "images/dust_white.png",
                         hour: hourForecast?.hour24 ?? "00:00",
                         temp: hourForecast?.temp.toDouble() ?? 0.0,
+                        iconColor:
+                            hourForecast?.weatherCode.colorScheme.primary ??
+                                Colors.white,
                       );
                     },
                     separatorBuilder: (_, __) => const VerticalDivider(),
@@ -80,11 +84,15 @@ class ForecastScreen extends StatelessWidget {
                           .weatherForecast
                           ?.dailyForecast[index];
                       return DayForecastCard(
-                        weatherIcon: dayForecast?.weatherCode.weatherIconLocation?? "images/dust_white.png",
+                        weatherIcon:
+                            dayForecast?.weatherCode.weatherIconLocation ??
+                                "images/dust_white.png",
                         weekDay: dayForecast?.weekDay ?? "None",
-                        temp: dayForecast?.tempMax ?? 0.0,
-                        feelsLike: dayForecast?.tempMin ?? 0.0,
-                        textColor: dayForecast?.weatherCode.dateTextColor?? kBlackDateTextColor,
+                        temp: dayForecast?.tempMin ?? 0.0,
+                        feelsLike: dayForecast?.tempMax ?? 0.0,
+                        textColor:
+                            dayForecast?.weatherCode.colorScheme.primary ??
+                                Colors.white,
                       );
                     },
                     separatorBuilder: (_, __) => const Divider(),
@@ -105,20 +113,22 @@ class DayForecastCard extends StatelessWidget {
   final double feelsLike;
   final Color textColor;
 
-  const DayForecastCard({super.key, 
-    required this.weatherIcon,
-    required this.weekDay,
-    required this.temp,
-    required this.feelsLike,
-    required this.textColor
-  });
+  const DayForecastCard(
+      {super.key,
+      required this.weatherIcon,
+      required this.weekDay,
+      required this.temp,
+      required this.feelsLike,
+      required this.textColor});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-          color: kForecastTileColor, borderRadius: BorderRadius.circular(10)),
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(10),
+      ),
       padding: const EdgeInsets.symmetric(
         vertical: 12,
         horizontal: 16,
@@ -148,7 +158,9 @@ class DayForecastCard extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: Text(
                 "${temp.toStringFirstDecimal()}°",
-                style: kConditionTextStyle,
+                style: kConditionTextStyle.copyWith(
+                  color: textColor,
+                ),
               ),
             ),
           ),
@@ -173,11 +185,14 @@ class HourForecastGrid extends StatelessWidget {
   final String weatherIcon;
   final String hour;
   final double temp;
+  final Color iconColor;
 
-  const HourForecastGrid({super.key, 
+  const HourForecastGrid({
+    super.key,
     required this.weatherIcon,
     required this.hour,
     required this.temp,
+    this.iconColor = Colors.white,
   });
 
   @override
@@ -186,7 +201,7 @@ class HourForecastGrid extends StatelessWidget {
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
-        color: kForecastTileColor,
+        color: Theme.of(context).colorScheme.surfaceContainer,
       ),
       height: 100,
       width: 100,
@@ -198,6 +213,7 @@ class HourForecastGrid extends StatelessWidget {
             weatherIcon,
             height: 40,
             width: 40,
+            color: iconColor,
           ),
           Text("$temp°")
         ],

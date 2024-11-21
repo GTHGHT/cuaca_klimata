@@ -21,22 +21,23 @@ enum WeatherCode {
 }
 
 extension WeatherCodeExtension on WeatherCode{
-  List<Color> get backgroundColors {
-    return switch(this){
-      WeatherCode.none => [kFogCS.secondary, kFogCS.secondaryContainer],
-      WeatherCode.clear => [kClearCS.secondary, kClearCS.secondaryContainer],
-      WeatherCode.cloudy => [kCloudyCS.secondary, kCloudyCS.secondaryContainer],
-      WeatherCode.fog => [kFogCS.secondary, kFogCS.secondaryContainer],
-      WeatherCode.drizzle => [kDrizzleCS.secondary, kDrizzleCS.secondaryContainer],
-      WeatherCode.freezingDrizzle => [kFreezeDrizzleCS.secondary, kFreezeDrizzleCS.secondaryContainer],
-      WeatherCode.rain => [kRainCS.secondary, kRainCS.secondaryContainer],
-      WeatherCode.freezingRain => [kFreezeRainCS.secondary, kFreezeRainCS.secondaryContainer],
-      WeatherCode.snow => [kSnowCS.secondary, kSnowCS.secondaryContainer],
-      WeatherCode.rainShower => [kRainShowerCS.secondary, kRainShowerCS.secondaryContainer],
-      WeatherCode.snowShower => [kSnowShowerCS.secondary, kSnowShowerCS.secondaryContainer],
-      WeatherCode.thunderstorm => [kThunderstormCS.secondary, kThunderstormCS.secondaryContainer],
-    };
-  }
+  //
+  // List<Color> get backgroundColors {
+  //   return switch(this){
+  //     WeatherCode.none => [kFogCS.surface, kFogCS.primaryFixedDim],
+  //     WeatherCode.clear => [kClearCS.surface, kClearCS.primaryFixedDim],
+  //     WeatherCode.cloudy => [kCloudyCS.surface, kCloudyCS.primaryFixedDim],
+  //     WeatherCode.fog => [kFogCS.surface, kFogCS.primaryFixedDim],
+  //     WeatherCode.drizzle => [kDrizzleCS.surface, kDrizzleCS.primaryFixedDim],
+  //     WeatherCode.freezingDrizzle => [kFreezeDrizzleCS.surface, kFreezeDrizzleCS.primaryFixedDim],
+  //     WeatherCode.rain => [kRainCS.surface, kRainCS.primaryFixedDim],
+  //     WeatherCode.freezingRain => [kFreezeRainCS.surface, kFreezeRainCS.primaryFixedDim],
+  //     WeatherCode.snow => [kSnowCS.surface, kSnowCS.primaryFixedDim],
+  //     WeatherCode.rainShower => [kRainShowerCS.surface, kRainShowerCS.primaryFixedDim],
+  //     WeatherCode.snowShower => [kSnowShowerCS.surface, kSnowShowerCS.primaryFixedDim],
+  //     WeatherCode.thunderstorm => [kThunderstormCS.surface, kThunderstormCS.primaryFixedDim],
+  //   };
+  // }
 
   // Color get dateTextColor {
   //   return switch(this){

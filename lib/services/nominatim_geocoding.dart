@@ -334,15 +334,15 @@ class NominatimGeocoding implements GeocodingIntegration {
         longitude: double.tryParse(lonString) ?? 0.0);
   }
 
-  GeoInfo _parseGeocoding(List<Map<String, dynamic>> json) {
+  GeoInfo _parseGeocoding(List<dynamic> json) {
     if (json.firstOrNull != null) {
-      String dName = json.elementAtOrNull(0)?["display_name"] ?? "";
-      String latString = json.elementAtOrNull(0)?["lat"] ?? "0.0";
-      String lonString = json.elementAtOrNull(0)?["lon"] ?? "0.0";
+      String dName = json[0]?["display_name"] ?? "";
+      String latString = json[0]?["lat"] ?? "0.0";
+      String lonString = json[0]?["lon"] ?? "0.0";
       String countryName = dName.substring(dName.lastIndexOf(", ") + 2);
       return GeoInfo(
         fullName: dName,
-        cityName: json.elementAtOrNull(0)?["name"] ?? "",
+        cityName: json[0]?["name"] ?? "",
         countryName: countryName,
         countryCode: _getCountryCode(countryName),
         latitude: double.tryParse(latString) ?? 0.0,

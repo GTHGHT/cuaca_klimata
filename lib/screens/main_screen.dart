@@ -38,6 +38,7 @@ class _MainScreenState extends State<MainScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       bottomNavigationBar: const MainAppBar(),
       body: SafeArea(
         child: context.select<Weathers, bool>((value) => value.loading)
@@ -64,12 +65,10 @@ class _MainScreenState extends State<MainScreen>
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: context
-                      .watch<Weathers>()
-                      .currentWeather
-                      ?.weatherCode
-                      .backgroundColors ??
-                  [kBlackBGLow, kBlackBGHigh],
+              colors: [
+                Theme.of(context).colorScheme.surface,
+                Theme.of(context).colorScheme.secondaryContainer
+              ],
             ),
           ),
           child: Column(
@@ -80,12 +79,7 @@ class _MainScreenState extends State<MainScreen>
                 child: Text(
                   DateFormat("d MMM y").format(DateTime.now()).toString(),
                   style: kDateTextStyle.copyWith(
-                    color: context
-                            .watch<Weathers>()
-                            .currentWeather
-                            ?.weatherCode
-                            .dateTextColor ??
-                        kWhiteDateTextColor,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
               ),
@@ -94,7 +88,9 @@ class _MainScreenState extends State<MainScreen>
                   context.select<Weathers, String>(
                     (value) => value.currentWeather?.city ?? "Tidak Ditemukan",
                   ),
-                  style: kCityTextStyle,
+                  style: kCityTextStyle.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ),
               const SizedBox(
@@ -109,6 +105,7 @@ class _MainScreenState extends State<MainScreen>
                           .weatherIconLocation ??
                       "images/broken_white.png",
                   fit: BoxFit.fitHeight,
+                  color: Theme.of(context).colorScheme.primary,
                   height: 100,
                   width: 100,
                 ),
@@ -122,20 +119,17 @@ class _MainScreenState extends State<MainScreen>
                     (value) => value.currentWeather?.weatherName ?? "Kosong",
                   ),
                   style: kConditionTextStyle.copyWith(
-                    color: context
-                            .watch<Weathers>()
-                            .currentWeather
-                            ?.weatherCode
-                            .detailTextColor ??
-                        kBlackDetailTextColor,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
               ),
               Text(
                 "${context.select<Weathers, double>(
-                  (value) => value.currentWeather?.temp ?? 0.0,
-                ).toStringFirstDecimal()}°",
-                style: kTempTextStyle,
+                      (value) => value.currentWeather?.temp ?? 0.0,
+                    ).toStringFirstDecimal()}°",
+                style: kTempTextStyle.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
               const WeatherDetailCard(),
             ],
@@ -171,6 +165,7 @@ class MainAppBar extends StatelessWidget {
                       content: Text(e.toString()),
                     ),
                   );
+                  return WeatherCode.none;
                 }),
                 icon: const FaIcon(
                   FontAwesomeIcons.locationCrosshairs,
@@ -179,21 +174,25 @@ class MainAppBar extends StatelessWidget {
               ),
               //TODO: INVESTIGATE WHAT PRIMARY IS
               TextButton(
-                style: TextButton.styleFrom(foregroundColor: Colors.white),
-                child: const Text(
+                child: Text(
                   "Weather Forecast",
-                  style: kWeatherForecastTextStyle,
+                  style: kWeatherForecastTextStyle.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
                 onPressed: () {
-                  context.read<Weathers>()
-                      .updateWeatherForecast();
-                    //   .catchError((e) {
-                    // ScaffoldMessenger.of(context).showSnackBar(
-                    //   SnackBar(
-                    //     content: Text(e.toString()),
-                    //   ),
-                    // );
-                  // });
+                  context
+                      .read<Weathers>()
+                      .updateWeatherForecast()
+                      .catchError((e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(e.toString()),
+                        ),
+                      );
+                    }
+                  });
                   Navigator.pushNamed(context, '/forecast');
                 },
               ),
@@ -221,9 +220,9 @@ class WeatherDetailCard extends StatelessWidget {
       width: double.infinity,
       height: 200,
       child: Card(
+        elevation: 2,
         margin: const EdgeInsets.all(25),
-        color:
-          context.watch<Weathers>().currentWeather?.weatherCode.cardColor ?? kBlackCardColor,
+        color: Theme.of(context).colorScheme.primaryContainer,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(
             Radius.circular(25),
@@ -235,20 +234,23 @@ class WeatherDetailCard extends StatelessWidget {
             WeatherDetailColumn(
               label: "Wind",
               icon: const AssetImage("images/wind_white.png"),
-              value: "${context.watch<Weathers>().currentWeather?.windSpeed?? 0.0}mph",
-              textColor: context.watch<Weathers>().currentWeather?.weatherCode.detailTextColor ?? kBlackDetailTextColor,
+              value:
+                  "${context.watch<Weathers>().currentWeather?.windSpeed ?? 0.0}mph",
+              textColor: Theme.of(context).colorScheme.onPrimaryContainer,
             ),
             WeatherDetailColumn(
               label: "Humidity",
               icon: const AssetImage("images/humidity_white.png"),
-              value: "${context.watch<Weathers>().currentWeather?.humidity?? 0.0}%",
-              textColor: context.watch<Weathers>().currentWeather?.weatherCode.detailTextColor ?? kBlackDetailTextColor,
+              value:
+                  "${context.watch<Weathers>().currentWeather?.humidity ?? 0.0}%",
+              textColor: Theme.of(context).colorScheme.onPrimaryContainer,
             ),
             WeatherDetailColumn(
               label: "Pressure",
               icon: const AssetImage("images/pressure_white.png"),
-              value: "${context.watch<Weathers>().currentWeather?.pressure?? 0.0}hPa",
-              textColor: context.watch<Weathers>().currentWeather?.weatherCode.detailTextColor ?? kBlackDetailTextColor,
+              value:
+                  "${context.watch<Weathers>().currentWeather?.pressure ?? 0.0}hPa",
+              textColor: Theme.of(context).colorScheme.onPrimaryContainer,
             ),
           ],
         ),
@@ -264,7 +266,8 @@ class WeatherDetailColumn extends StatelessWidget {
   final Color textColor;
 
   const WeatherDetailColumn(
-      {super.key, required this.label,
+      {super.key,
+      required this.label,
       required this.icon,
       required this.value,
       required this.textColor});
@@ -286,6 +289,7 @@ class WeatherDetailColumn extends StatelessWidget {
           image: icon,
           width: 50,
           height: 50,
+          color: textColor,
         ),
         FittedBox(
           child: Text(

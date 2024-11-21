@@ -1,25 +1,35 @@
-import '../services/weathers.dart';
-import '../utilities/constants.dart';
+import 'package:cuaca_klimata/services/data_class/weather_code.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+
+import '../services/color_scheme_notifier.dart';
+import '../services/weathers.dart';
+import '../utilities/constants.dart';
 
 class CityScreen extends StatelessWidget {
   final TextEditingController cityController = TextEditingController();
 
   CityScreen({super.key});
 
-  void updateWeather(BuildContext context) async {
-    await Provider.of<Weathers>(context, listen: false)
+  Future<void> updateWeather(BuildContext context) async {
+    WeatherCode result = await Provider.of<Weathers>(context, listen: false)
         .updateCityWeather(cityController.text)
         .catchError((e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString()),
-        ),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+          ),
+        );
+      }
+      return WeatherCode.none;
     });
-    Navigator.pop(context);
+    if (context.mounted) {
+      context.read<ColorSchemeNotifier>().colorScheme = result.colorScheme;
+      context.read<ColorSchemeNotifier>().darkColorScheme =
+          result.darkColorScheme;
+    }
   }
 
   @override
@@ -28,7 +38,7 @@ class CityScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Search City"),
         centerTitle: true,
-        backgroundColor: kScaffoldBGColor,
+        backgroundColor: Theme.of(context).colorScheme.surface,
       ),
       body: SafeArea(
         child: Container(
@@ -45,15 +55,20 @@ class CityScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
               contentPadding: const EdgeInsets.all(5).copyWith(left: 15),
-              fillColor: kForecastTileColor,
+              fillColor: Theme.of(context).cardColor,
               filled: true,
               floatingLabelBehavior: FloatingLabelBehavior.never,
               suffix: IconButton(
                 alignment: Alignment.topRight,
-                onPressed: () => updateWeather(context),
-                icon: const FaIcon(
+                onPressed: () async {
+                  await updateWeather(context);
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                  }
+                },
+                icon: FaIcon(
                   FontAwesomeIcons.magnifyingGlass,
-                  color: kTextFieldCursorColor,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ),
