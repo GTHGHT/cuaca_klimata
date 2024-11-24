@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cuaca_klimata/services/color_scheme_notifier.dart';
 import 'package:cuaca_klimata/services/data_class/weather_code.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 
 import '../services/weathers.dart';
@@ -73,19 +74,12 @@ class _LandingScreenState extends State<LandingScreen>
                 opacity: _imageController,
                 child: SlideTransition(
                   position: _imageAnimation,
-                  child: SizedBox(
-                    height: MediaQuery.of(context).size.height / 4,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemBuilder: (context, index) {
-                        return SizedBox(
-                          width: MediaQuery.of(context).size.width,
-                          child: Image.asset(
-                            kWeatherImageList[index % kWeatherImageList.length],
-                            fit: BoxFit.fitHeight,
-                          ),
-                        );
-                      },
+                  child: SizedBox.square(
+                    dimension: MediaQuery.of(context).size.height / 4,
+                    child: SvgPicture.asset(
+                      "svgs/day-sunny.svg",
+                      colorFilter: ColorFilter.mode(Theme.of(context).colorScheme.primary, BlendMode.srcIn),
+                      fit: BoxFit.fitHeight,
                     ),
                   ),
                 ),
@@ -140,7 +134,7 @@ class _LandingScreenState extends State<LandingScreen>
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF6CC1F6),
+                      color: Theme.of(context).colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     alignment: Alignment.center,
@@ -166,9 +160,11 @@ class _LandingScreenState extends State<LandingScreen>
                         // });
                         Navigator.pushNamed(context, '/');
                       },
-                      child: const Text(
+                      child:  Text(
                         "Get Started",
-                        style: kLandingButtonTextStyle,
+                        style: kLandingButtonTextStyle.copyWith(
+                          color: Theme.of(context).colorScheme.onPrimaryContainer
+                        ),
                       ),
                     ),
                   ),

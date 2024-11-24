@@ -1,6 +1,5 @@
 import 'package:cuaca_klimata/services/data_class/weather_code.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../services/color_scheme_notifier.dart';
@@ -66,8 +65,8 @@ class CityScreen extends StatelessWidget {
                     Navigator.pop(context);
                   }
                 },
-                icon: FaIcon(
-                  FontAwesomeIcons.magnifyingGlass,
+                icon: Icon(
+                  Icons.search,
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),

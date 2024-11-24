@@ -1,6 +1,4 @@
-import 'dart:ui';
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../../utilities/constants.dart';
@@ -21,90 +19,29 @@ enum WeatherCode {
 }
 
 extension WeatherCodeExtension on WeatherCode{
-  //
-  // List<Color> get backgroundColors {
-  //   return switch(this){
-  //     WeatherCode.none => [kFogCS.surface, kFogCS.primaryFixedDim],
-  //     WeatherCode.clear => [kClearCS.surface, kClearCS.primaryFixedDim],
-  //     WeatherCode.cloudy => [kCloudyCS.surface, kCloudyCS.primaryFixedDim],
-  //     WeatherCode.fog => [kFogCS.surface, kFogCS.primaryFixedDim],
-  //     WeatherCode.drizzle => [kDrizzleCS.surface, kDrizzleCS.primaryFixedDim],
-  //     WeatherCode.freezingDrizzle => [kFreezeDrizzleCS.surface, kFreezeDrizzleCS.primaryFixedDim],
-  //     WeatherCode.rain => [kRainCS.surface, kRainCS.primaryFixedDim],
-  //     WeatherCode.freezingRain => [kFreezeRainCS.surface, kFreezeRainCS.primaryFixedDim],
-  //     WeatherCode.snow => [kSnowCS.surface, kSnowCS.primaryFixedDim],
-  //     WeatherCode.rainShower => [kRainShowerCS.surface, kRainShowerCS.primaryFixedDim],
-  //     WeatherCode.snowShower => [kSnowShowerCS.surface, kSnowShowerCS.primaryFixedDim],
-  //     WeatherCode.thunderstorm => [kThunderstormCS.surface, kThunderstormCS.primaryFixedDim],
-  //   };
-  // }
-
-  // Color get dateTextColor {
-  //   return switch(this){
-  //     WeatherCode.none => throw UnimplementedError(),
-  //     WeatherCode.clear => kBlueDateTextColor,
-  //     WeatherCode.cloudy => throw UnimplementedError(),
-  //     WeatherCode.fog => throw UnimplementedError(),
-  //     WeatherCode.drizzle => throw UnimplementedError(),
-  //     WeatherCode.freezingDrizzle => throw UnimplementedError(),
-  //     WeatherCode.rain => kRedDateTextColor,
-  //     WeatherCode.freezingRain => throw UnimplementedError(),
-  //     WeatherCode.snow => throw UnimplementedError(),
-  //     WeatherCode.rainShower => throw UnimplementedError(),
-  //     WeatherCode.snowShower => throw UnimplementedError(),
-  //     WeatherCode.thunderstorm => kBlackDateTextColor,
-  //   };
-  // }
-  //
-  //  Color get detailTextColor {
-  //   return switch(this){
-  //     WeatherCode.none => throw UnimplementedError(),
-  //     WeatherCode.clear => kBlueDetailTextColor,
-  //     WeatherCode.cloudy => throw UnimplementedError(),
-  //     WeatherCode.fog => throw UnimplementedError(),
-  //     WeatherCode.drizzle => throw UnimplementedError(),
-  //     WeatherCode.freezingDrizzle => throw UnimplementedError(),
-  //     WeatherCode.rain => kRedDetailTextColor,
-  //     WeatherCode.freezingRain => throw UnimplementedError(),
-  //     WeatherCode.snow => throw UnimplementedError(),
-  //     WeatherCode.rainShower => throw UnimplementedError(),
-  //     WeatherCode.snowShower => throw UnimplementedError(),
-  //     WeatherCode.thunderstorm => kBlackDetailTextColor,
-  //   };
-  // }
-  //
-  //  Color get cardColor {
-  //   return switch(this){
-  //     WeatherCode.none => throw UnimplementedError(),
-  //     WeatherCode.clear => kBlueCardColor,
-  //     WeatherCode.cloudy => throw UnimplementedError(),
-  //     WeatherCode.fog => throw UnimplementedError(),
-  //     WeatherCode.drizzle => throw UnimplementedError(),
-  //     WeatherCode.freezingDrizzle => throw UnimplementedError(),
-  //     WeatherCode.rain => kRedCardColor,
-  //     WeatherCode.freezingRain => throw UnimplementedError(),
-  //     WeatherCode.snow => throw UnimplementedError(),
-  //     WeatherCode.rainShower => throw UnimplementedError(),
-  //     WeatherCode.snowShower => throw UnimplementedError(),
-  //     WeatherCode.thunderstorm => kBlackCardColor,
-  //   };
-  // }
-
-  String get weatherIconLocation {
+  String getWeatherIcon(bool isDay) {
     return switch(this){
-      WeatherCode.none => "images/broken_white.png",
-      WeatherCode.clear => "images/clear_white.png",
-      WeatherCode.cloudy => "images/cloud_white.png",
-      WeatherCode.fog => "images/dust_white.png",
-      WeatherCode.drizzle => "images/drizzle_white.png",
-      WeatherCode.freezingDrizzle => throw UnimplementedError(),
-      WeatherCode.rain => "images/rain_white.png",
-      WeatherCode.freezingRain => throw UnimplementedError(),
-      WeatherCode.snow => "images/snow_white.png",
-      WeatherCode.rainShower => "images/fewc_white.png",
-      WeatherCode.snowShower => throw UnimplementedError(),
-      WeatherCode.thunderstorm => "images/storm_white.png",
+      WeatherCode.none => "svgs/day-fog.svg" ,
+      WeatherCode.clear => isDay ? "svgs/day-sunny.svg" : "svgs/night-clear.svg",
+      WeatherCode.cloudy =>  isDay ? "svgs/day-cloudy.svg" : "svgs/night-cloudy.svg",
+      WeatherCode.fog =>  isDay ? "svgs/day-fog.svg" : "svgs/night-fog.svg",
+      WeatherCode.drizzle =>  isDay ? "svgs/day-drizzle.svg" : "svgs/night-drizzle.svg",
+      WeatherCode.freezingDrizzle =>  isDay ? "svgs/day-drizzle.svg" : "svgs/night-drizzle.svg",
+      WeatherCode.rain =>  isDay ? "svgs/day-rain.svg" : "svgs/night-rain.svg",
+      WeatherCode.freezingRain =>  isDay ? "svgs/day-rain-freeze.svg" : "svgs/night-rain-freeze.svg",
+      WeatherCode.snow =>  "svgs/show.svg",
+      WeatherCode.rainShower =>  isDay ? "svgs/day-showers.svg" : "svgs/night-showers.svg",
+      WeatherCode.snowShower =>  isDay ? "svgs/day-snow-showers.svg" : "svgs/night-snow-showers.svg",
+      WeatherCode.thunderstorm =>  isDay ? "svgs/day-thunderstorm.svg" : "svgs/night-thunderstorm.svg",
     };
+  }
+
+  ColorScheme getColorScheme(Brightness brightness){
+    if(brightness == Brightness.light){
+      return colorScheme;
+    } else {
+      return darkColorScheme;
+    }
   }
 
   ColorScheme get colorScheme {

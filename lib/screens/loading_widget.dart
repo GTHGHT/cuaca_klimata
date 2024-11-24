@@ -7,8 +7,8 @@ class LoadingWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       alignment: Alignment.center,
-      child: const CircularProgressIndicator(
-        color: Colors.white,
+      child: CircularProgressIndicator(
+        color: Theme.of(context).colorScheme.onSurface,
         strokeWidth: 8.0,
       ),
     );

@@ -1,7 +1,7 @@
 import 'package:cuaca_klimata/services/data_class/weather_code.dart';
 import 'package:cuaca_klimata/utilities/double_extension.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -97,18 +97,23 @@ class _MainScreenState extends State<MainScreen>
                 height: 15,
               ),
               Flexible(
-                child: Image.asset(
-                  context
-                          .watch<Weathers>()
-                          .currentWeather
-                          ?.weatherCode
-                          .weatherIconLocation ??
-                      "images/broken_white.png",
-                  fit: BoxFit.fitHeight,
-                  color: Theme.of(context).colorScheme.primary,
-                  height: 100,
-                  width: 100,
-                ),
+                child: Builder(builder: (context) {
+                  var cWeather = context.watch<Weathers>().currentWeather;
+                  if (cWeather != null) {
+                    return SvgPicture.asset(
+                      cWeather.weatherCode.getWeatherIcon(cWeather.isDay),
+                      fit: BoxFit.fitHeight,
+                      colorFilter: ColorFilter.mode(
+                        Theme.of(context).colorScheme.primary,
+                        BlendMode.srcIn,
+                      ),
+                      height: 100,
+                      width: 100,
+                    );
+                  } else {
+                    return const SizedBox.square(dimension: 100);
+                  }
+                }),
               ),
               const SizedBox(
                 height: 15,
@@ -167,9 +172,11 @@ class MainAppBar extends StatelessWidget {
                   );
                   return WeatherCode.none;
                 }),
-                icon: const FaIcon(
-                  FontAwesomeIcons.locationCrosshairs,
-                  size: 32,
+                icon: SvgPicture.asset(
+                  "svgs/current-location.svg",
+                  height: 48,
+                  width: 48,
+                  colorFilter: ColorFilter.mode(Theme.of(context).colorScheme.onSurface, BlendMode.srcIn),
                 ),
               ),
               //TODO: INVESTIGATE WHAT PRIMARY IS
@@ -198,9 +205,11 @@ class MainAppBar extends StatelessWidget {
               ),
               IconButton(
                 onPressed: () => Navigator.pushNamed(context, '/city'),
-                icon: const FaIcon(
-                  FontAwesomeIcons.magnifyingGlass,
-                  size: 32,
+                icon: SvgPicture.asset(
+                  "svgs/search-location.svg",
+                  height: 48,
+                  width: 48,
+                  colorFilter: ColorFilter.mode(Theme.of(context).colorScheme.onSurface, BlendMode.srcIn),
                 ),
               ),
             ],
@@ -233,21 +242,45 @@ class WeatherDetailCard extends StatelessWidget {
           children: [
             WeatherDetailColumn(
               label: "Wind",
-              icon: const AssetImage("images/wind_white.png"),
+              iconWidget: SvgPicture.asset(
+                "svgs/wind-speed.svg",
+                height: 48,
+                width: 48,
+                colorFilter: ColorFilter.mode(
+                  Theme.of(context).colorScheme.onPrimaryContainer,
+                  BlendMode.srcIn,
+                ),
+              ),
               value:
                   "${context.watch<Weathers>().currentWeather?.windSpeed ?? 0.0}mph",
               textColor: Theme.of(context).colorScheme.onPrimaryContainer,
             ),
             WeatherDetailColumn(
               label: "Humidity",
-              icon: const AssetImage("images/humidity_white.png"),
+              iconWidget: SvgPicture.asset(
+                "svgs/humidity.svg",
+                height: 48,
+                width: 48,
+                colorFilter: ColorFilter.mode(
+                  Theme.of(context).colorScheme.onPrimaryContainer,
+                  BlendMode.srcIn,
+                ),
+              ),
               value:
                   "${context.watch<Weathers>().currentWeather?.humidity ?? 0.0}%",
               textColor: Theme.of(context).colorScheme.onPrimaryContainer,
             ),
             WeatherDetailColumn(
               label: "Pressure",
-              icon: const AssetImage("images/pressure_white.png"),
+              iconWidget: SvgPicture.asset(
+                "svgs/pressure.svg",
+                height: 48,
+                width: 48,
+                colorFilter: ColorFilter.mode(
+                  Theme.of(context).colorScheme.onPrimaryContainer,
+                  BlendMode.srcIn,
+                ),
+              ),
               value:
                   "${context.watch<Weathers>().currentWeather?.pressure ?? 0.0}hPa",
               textColor: Theme.of(context).colorScheme.onPrimaryContainer,
@@ -261,14 +294,14 @@ class WeatherDetailCard extends StatelessWidget {
 
 class WeatherDetailColumn extends StatelessWidget {
   final String label;
-  final ImageProvider icon;
+  final Widget iconWidget;
   final String value;
   final Color textColor;
 
   const WeatherDetailColumn(
       {super.key,
       required this.label,
-      required this.icon,
+      required this.iconWidget,
       required this.value,
       required this.textColor});
 
@@ -285,12 +318,7 @@ class WeatherDetailColumn extends StatelessWidget {
             ),
           ),
         ),
-        Image(
-          image: icon,
-          width: 50,
-          height: 50,
-          color: textColor,
-        ),
+        iconWidget,
         FittedBox(
           child: Text(
             value,

@@ -1,5 +1,6 @@
 import 'package:cuaca_klimata/utilities/double_extension.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -49,18 +50,30 @@ class ForecastScreen extends StatelessWidget {
                           .watch<Weathers>()
                           .weatherForecast
                           ?.hourlyForecast[index];
-                      return HourForecastGrid(
-                        weatherIcon:
-                            hourForecast?.weatherCode.weatherIconLocation ??
-                                "images/dust_white.png",
-                        hour: hourForecast?.hour24 ?? "00:00",
-                        temp: hourForecast?.temp.toDouble() ?? 0.0,
-                        iconColor:
-                            hourForecast?.weatherCode.colorScheme.primary ??
-                                Colors.white,
-                      );
+                      if (hourForecast != null) {
+                        return HourForecastGrid(
+                          weatherIcon: hourForecast.weatherCode
+                              .getWeatherIcon(hourForecast.isDay),
+                          hour: hourForecast.hour24,
+                          temp: hourForecast.temp,
+                          contentsColor: hourForecast.weatherCode
+                              .getColorScheme(Theme.of(context).brightness)
+                              .primary,
+                          containerColor: hourForecast.weatherCode
+                              .getColorScheme(Theme.of(context).brightness)
+                              .surfaceContainer,
+                        );
+                      } else {
+                        return const HourForecastGrid(
+                          weatherIcon: "svgs/day-sunny.svg",
+                          hour: "-",
+                          temp: 0.0,
+                        );
+                      }
                     },
-                    separatorBuilder: (_, __) => const VerticalDivider(),
+                    separatorBuilder: (_, __) => const SizedBox.square(
+                      dimension: 8,
+                    ),
                     itemCount: context.select<Weathers, int>((value) =>
                         value.weatherForecast?.hourlyForecast.length ?? 0),
                   ),
@@ -77,25 +90,41 @@ class ForecastScreen extends StatelessWidget {
                   height: 12,
                 ),
                 Expanded(
-                  child: ListView.separated(
+                  child: ListView.builder(
                     itemBuilder: (context, index) {
-                      DailyWeather? dayForecast = context
-                          .watch<Weathers>()
-                          .weatherForecast
-                          ?.dailyForecast[index];
-                      return DayForecastCard(
-                        weatherIcon:
-                            dayForecast?.weatherCode.weatherIconLocation ??
-                                "images/dust_white.png",
-                        weekDay: dayForecast?.weekDay ?? "None",
-                        temp: dayForecast?.tempMin ?? 0.0,
-                        feelsLike: dayForecast?.tempMax ?? 0.0,
-                        textColor:
-                            dayForecast?.weatherCode.colorScheme.primary ??
-                                Colors.white,
-                      );
+                      WeatherForecast? weatherForecast =
+                          context.watch<Weathers>().weatherForecast;
+                      if (weatherForecast != null) {
+                        DailyWeather dayForecast =
+                            weatherForecast.dailyForecast[index];
+                        int forecastLength =
+                            weatherForecast.dailyForecast.length;
+                        BorderRadius borderRadius = index == 0
+                            ? BorderRadius.vertical(top: Radius.circular(16))
+                            : index == forecastLength - 1
+                                ? BorderRadius.vertical(
+                                    bottom: Radius.circular(16))
+                                : BorderRadius.zero;
+                        return DayForecastCard(
+                          weatherIcon:
+                              dayForecast.weatherCode.getWeatherIcon(true),
+                          weekDay: dayForecast.weekDay,
+                          temp: dayForecast.tempMin,
+                          feelsLike: dayForecast.tempMax,
+                          textColor: dayForecast.weatherCode
+                              .getColorScheme(Theme.of(context).brightness)
+                              .primary,
+                          borderRadius: borderRadius,
+                        );
+                      } else {
+                        return const DayForecastCard(
+                          weatherIcon: "svgs/snow.svg",
+                          weekDay: "weekDay",
+                          temp: 0.0,
+                          feelsLike: 0.0,
+                        );
+                      }
                     },
-                    separatorBuilder: (_, __) => const Divider(),
                     itemCount: context.select<Weathers, int>((value) =>
                         value.weatherForecast?.dailyForecast.length ?? 0),
                   ),
@@ -112,22 +141,28 @@ class DayForecastCard extends StatelessWidget {
   final double temp;
   final double feelsLike;
   final Color textColor;
+  final BorderRadiusGeometry? borderRadius;
 
-  const DayForecastCard(
-      {super.key,
-      required this.weatherIcon,
-      required this.weekDay,
-      required this.temp,
-      required this.feelsLike,
-      required this.textColor});
+  const DayForecastCard({
+    super.key,
+    required this.weatherIcon,
+    required this.weekDay,
+    required this.temp,
+    required this.feelsLike,
+    this.textColor = Colors.black,
+    this.borderRadius,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12),
+      margin: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 1,
+      ),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(10),
+        color: Theme.of(context).colorScheme.surfaceContainer,
+        borderRadius: borderRadius,
       ),
       padding: const EdgeInsets.symmetric(
         vertical: 12,
@@ -136,7 +171,7 @@ class DayForecastCard extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            flex: 3,
+            flex: 2,
             child: Text(
               weekDay,
               style: const TextStyle(
@@ -147,10 +182,14 @@ class DayForecastCard extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: Image.asset(
+            child: SvgPicture.asset(
               weatherIcon,
               width: 44,
               height: 44,
+              colorFilter: ColorFilter.mode(
+                textColor,
+                BlendMode.srcIn,
+              ),
             ),
           ),
           Expanded(
@@ -185,15 +224,16 @@ class HourForecastGrid extends StatelessWidget {
   final String weatherIcon;
   final String hour;
   final double temp;
-  final Color iconColor;
+  final Color contentsColor;
+  final Color containerColor;
 
-  const HourForecastGrid({
-    super.key,
-    required this.weatherIcon,
-    required this.hour,
-    required this.temp,
-    this.iconColor = Colors.white,
-  });
+  const HourForecastGrid(
+      {super.key,
+      required this.weatherIcon,
+      required this.hour,
+      required this.temp,
+      this.contentsColor = Colors.black,
+      this.containerColor = Colors.grey});
 
   @override
   Widget build(BuildContext context) {
@@ -201,21 +241,33 @@ class HourForecastGrid extends StatelessWidget {
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
-        color: Theme.of(context).colorScheme.surfaceContainer,
+        color: containerColor,
       ),
       height: 100,
       width: 100,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          Text(hour),
-          Image.asset(
+          Text(
+            hour,
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(color: contentsColor),
+          ),
+          SvgPicture.asset(
             weatherIcon,
             height: 40,
             width: 40,
-            color: iconColor,
+            colorFilter: ColorFilter.mode(contentsColor, BlendMode.srcIn),
           ),
-          Text("$temp°")
+          Text(
+            "$temp°",
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(color: contentsColor),
+          )
         ],
       ),
     );
