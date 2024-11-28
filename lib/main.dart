@@ -23,33 +23,75 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<Weathers>(create: (_) {
           return Weathers(null);
         }),
-        ChangeNotifierProvider<ColorSchemeNotifier>(create: (_){
+        ChangeNotifierProvider<ColorSchemeNotifier>(create: (_) {
           return ColorSchemeNotifier(kFogCS, kFogDarkCS);
         })
       ],
-      child: Builder(
-        builder: (context) {
-          return MaterialApp(
-            debugShowCheckedModeBanner: false,
-            theme: ThemeData(
-              colorScheme: context.watch<ColorSchemeNotifier>().colorScheme,
-              useMaterial3: true,
+      child: Builder(builder: (context) {
+        var whiteTypo = Typography().white;
+        var blackTypo = Typography().black;
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            colorScheme: context.watch<ColorSchemeNotifier>().colorScheme,
+            useMaterial3: true,
+            fontFamily: 'Noto Sans',
+            textTheme: blackTypo.copyWith(
+              displayLarge: blackTypo.displayLarge?.copyWith(
+                fontFamily: 'Quicksand',
+              ),
+              displayMedium: blackTypo.displayMedium?.copyWith(
+                fontFamily: 'Quicksand',
+              ),
+              displaySmall: blackTypo.displaySmall?.copyWith(
+                fontFamily: 'Quicksand',
+              ),
+              headlineLarge: blackTypo.headlineLarge?.copyWith(
+                fontFamily: 'Quicksand',
+              ),
+              headlineMedium: blackTypo.headlineMedium?.copyWith(
+                fontFamily: 'Quicksand',
+              ),
+              headlineSmall: blackTypo.headlineSmall?.copyWith(
+                fontFamily: 'Quicksand',
+              ),
             ),
-            darkTheme: ThemeData(
-              colorScheme: context.watch<ColorSchemeNotifier>().darkColorScheme,
-              useMaterial3: true,
+          ),
+          darkTheme: ThemeData(
+            colorScheme: context.watch<ColorSchemeNotifier>().darkColorScheme,
+            useMaterial3: true,
+            fontFamily: 'Noto Sans',
+            textTheme: whiteTypo.copyWith(
+              displayLarge: whiteTypo.displayLarge?.copyWith(
+                fontFamily: 'Quicksand',
+              ),
+              displayMedium: blackTypo.displayMedium?.copyWith(
+                fontFamily: 'Quicksand',
+              ),
+              displaySmall: blackTypo.displaySmall?.copyWith(
+                fontFamily: 'Quicksand',
+              ),
+              headlineLarge: blackTypo.headlineLarge?.copyWith(
+                fontFamily: 'Quicksand',
+              ),
+              headlineMedium: blackTypo.headlineMedium?.copyWith(
+                fontFamily: 'Quicksand',
+              ),
+              headlineSmall: blackTypo.headlineSmall?.copyWith(
+                fontFamily: 'Quicksand',
+              ),
             ),
-            themeMode: ThemeMode.system,
-            routes: {
-              '/landing': (context) => const LandingScreen(),
-              '/': (context) => const MainScreen(),
-              '/city': (context) => CityScreen(),
-              '/forecast': (context) => const ForecastScreen(),
-            },
-            initialRoute: '/landing',
-          );
-        }
-      ),
+          ),
+          themeMode: ThemeMode.system,
+          routes: {
+            '/landing': (context) => const LandingScreen(),
+            '/': (context) => const MainScreen(),
+            '/city': (context) => CityScreen(),
+            '/forecast': (context) => const ForecastScreen(),
+          },
+          initialRoute: '/landing',
+        );
+      }),
     );
   }
 }

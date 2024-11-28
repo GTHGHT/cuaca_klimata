@@ -39,7 +39,6 @@ class _MainScreenState extends State<MainScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      bottomNavigationBar: const MainAppBar(),
       body: SafeArea(
         child: context.select<Weathers, bool>((value) => value.loading)
             ? const LoadingWidget()
@@ -59,9 +58,6 @@ class _MainScreenState extends State<MainScreen>
         opacity: controller,
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: const BorderRadius.vertical(
-              bottom: Radius.circular(25),
-            ),
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -72,75 +68,134 @@ class _MainScreenState extends State<MainScreen>
             ),
           ),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Flexible(
-                child: Text(
-                  DateFormat("d MMM y").format(DateTime.now()).toString(),
-                  style: kDateTextStyle.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
+              TopMainAppBar(
+                title: DateFormat("d MMM y, H:mm")
+                    .format(DateTime.now())
+                    .toString(),
               ),
-              Flexible(
-                child: Text(
-                  context.select<Weathers, String>(
-                    (value) => value.currentWeather?.city ?? "Tidak Ditemukan",
-                  ),
-                  style: kCityTextStyle.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+              Builder(builder: (context) {
+                String countryCode = context
+                        .watch<Weathers>()
+                        .currentWeather
+                        ?.countryCode
+                        .toUpperCase() ??
+                    "US";
+                String? countryName = context.select<Weathers, String?>(
+                    (ws) => ws.currentWeather?.countryName);
+                var firstChar = countryCode.codeUnitAt(0) - 0x41 + 0x1F1E6;
+                var secondChar = countryCode.codeUnitAt(1) - 0x41 + 0x1F1E6;
+                String flag = String.fromCharCode(firstChar) +
+                    String.fromCharCode(secondChar);
+                return Text(
+                  "$flag ${countryName ?? countryCode}",
+                  style: Theme.of(context).textTheme.bodyLarge,
+                );
+              }),
+              Text(
+                context.select<Weathers, String>(
+                  (value) => value.currentWeather?.city ?? "Tidak Ditemukan",
                 ),
+                style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
               ),
               const SizedBox(
                 height: 15,
               ),
-              Flexible(
-                child: Builder(builder: (context) {
-                  var cWeather = context.watch<Weathers>().currentWeather;
-                  if (cWeather != null) {
-                    return SvgPicture.asset(
-                      cWeather.weatherCode.getWeatherIcon(cWeather.isDay),
-                      fit: BoxFit.fitHeight,
-                      colorFilter: ColorFilter.mode(
-                        Theme.of(context).colorScheme.primary,
-                        BlendMode.srcIn,
-                      ),
-                      height: 100,
-                      width: 100,
-                    );
-                  } else {
-                    return const SizedBox.square(dimension: 100);
-                  }
-                }),
-              ),
+              Builder(builder: (context) {
+                var cWeather = context.watch<Weathers>().currentWeather;
+                if (cWeather != null) {
+                  return SvgPicture.asset(
+                    cWeather.weatherCode.getWeatherIcon(cWeather.isDay),
+                    colorFilter: ColorFilter.mode(
+                      Theme.of(context).colorScheme.primary,
+                      BlendMode.srcIn,
+                    ),
+                    height: 100,
+                    width: 100,
+                  );
+                } else {
+                  return const SizedBox.square(dimension: 100);
+                }
+              }),
               const SizedBox(
                 height: 15,
               ),
-              Flexible(
-                child: Text(
-                  context.select<Weathers, String>(
-                    (value) => value.currentWeather?.weatherName ?? "Kosong",
-                  ),
-                  style: kConditionTextStyle.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+              Text(
+                context.select<Weathers, String>(
+                  (value) => value.currentWeather?.weatherName ?? "Kosong",
                 ),
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
               ),
               Text(
                 "${context.select<Weathers, double>(
                       (value) => value.currentWeather?.temp ?? 0.0,
                     ).toStringFirstDecimal()}°",
-                style: kTempTextStyle.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
-                ),
+                style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
               ),
               const WeatherDetailCard(),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget buildCompactScreen() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+          padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.secondaryContainer,
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    context.select<Weathers, String>(
+                        (value) => value.currentWeather?.city ?? ""),
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  Text(
+                    context.select<Weathers, String>(
+                        (value) => value.currentWeather?.countryName ?? ""),
+                    style: Theme.of(context).textTheme.titleSmall,
+                  )
+                ],
+              ),
+              Builder(builder: (context) {
+                String countryCode = context
+                        .watch<Weathers>()
+                        .currentWeather
+                        ?.countryCode
+                        .toUpperCase() ??
+                    "UN";
+                var firstChar = countryCode.codeUnitAt(0) - 0x41 + 0x1F1E6;
+                var secondChar = countryCode.codeUnitAt(1) - 0x41 + 0x1F1E6;
+                String flag = String.fromCharCode(firstChar) +
+                    String.fromCharCode(secondChar);
+                return Text(
+                  flag,
+                  style: Theme.of(context).textTheme.headlineMedium,
+                );
+              })
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -176,7 +231,8 @@ class MainAppBar extends StatelessWidget {
                   "svgs/current-location.svg",
                   height: 48,
                   width: 48,
-                  colorFilter: ColorFilter.mode(Theme.of(context).colorScheme.onSurface, BlendMode.srcIn),
+                  colorFilter: ColorFilter.mode(
+                      Theme.of(context).colorScheme.onSurface, BlendMode.srcIn),
                 ),
               ),
               //TODO: INVESTIGATE WHAT PRIMARY IS
@@ -209,12 +265,84 @@ class MainAppBar extends StatelessWidget {
                   "svgs/search-location.svg",
                   height: 48,
                   width: 48,
-                  colorFilter: ColorFilter.mode(Theme.of(context).colorScheme.onSurface, BlendMode.srcIn),
+                  colorFilter: ColorFilter.mode(
+                      Theme.of(context).colorScheme.onSurface, BlendMode.srcIn),
                 ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class TopMainAppBar extends StatelessWidget {
+  final String title;
+
+  const TopMainAppBar({super.key, required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 64.0,
+      padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            title,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+          ),
+          Spacer(),
+          IconButton(
+            style: IconButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+            ),
+            onPressed: () => context
+                .read<Weathers>()
+                .updateCurrentLocationWeather()
+                .catchError((e) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(e.toString()),
+                  ),
+                );
+              }
+              return WeatherCode.none;
+            }),
+            icon: SvgPicture.asset(
+              "svgs/current-location.svg",
+              height: 24,
+              width: 24,
+              colorFilter: ColorFilter.mode(
+                Theme.of(context).colorScheme.onSecondaryContainer,
+                BlendMode.srcIn,
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 8,
+          ),
+          IconButton(
+            style: IconButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+            ),
+            onPressed: () => Navigator.pushNamed(context, '/city'),
+            icon: SvgPicture.asset(
+              "svgs/search-location.svg",
+              height: 24,
+              width: 24,
+              colorFilter: ColorFilter.mode(
+                Theme.of(context).colorScheme.onSurface,
+                BlendMode.srcIn,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

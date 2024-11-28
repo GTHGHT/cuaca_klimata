@@ -19,11 +19,33 @@ class LandingScreen extends StatefulWidget {
 class _LandingScreenState extends State<LandingScreen>
     with TickerProviderStateMixin {
   late AnimationController _imageController;
-  late Animation<Offset> _imageAnimation;
   late AnimationController _textController;
   late Animation<Offset> _textAnimation;
   late AnimationController _buttonController;
   late Animation<Offset> _buttonAnimation;
+  late CarouselController _carouselController;
+
+  final _weatherIcons = [
+    "svgs/day-sunny.svg",
+    "svgs/night-clear.svg",
+    "svgs/day-cloudy.svg",
+    "svgs/night-cloudy.svg",
+    "svgs/day-drizzle.svg",
+    "svgs/night-drizzle.svg",
+    "svgs/day-fog.svg",
+    "svgs/night-fog.svg",
+    "svgs/day-rain.svg",
+    "svgs/night-rain.svg",
+    "svgs/day-rain-freeze.svg",
+    "svgs/night-rain-freeze.svg",
+    "svgs/day-showers.svg",
+    "svgs/night-showers.svg",
+    "svgs/day-snow-showers.svg",
+    "svgs/night-snow-showers.svg",
+    "svgs/day-thunderstorm.svg",
+    "svgs/night-thunderstorm.svg",
+    "svgs/snow.svg"
+  ]..shuffle();
 
   @override
   void initState() {
@@ -31,10 +53,6 @@ class _LandingScreenState extends State<LandingScreen>
       duration: const Duration(seconds: 1),
       vsync: this,
     );
-    _imageAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.5),
-      end: Offset.zero,
-    ).animate(_imageController);
     _textController = AnimationController(
       duration: const Duration(seconds: 1),
       vsync: this,
@@ -49,11 +67,18 @@ class _LandingScreenState extends State<LandingScreen>
       begin: const Offset(0, 0.5),
       end: Offset.zero,
     ).animate(_buttonController);
+    _carouselController = CarouselController(initialItem: 1);
     Timer(
       const Duration(milliseconds: 200),
       () => _imageController.forward(from: 0).then(
             (value) => _textController.forward(from: 0).then(
-                  (value) => _buttonController.forward(from: 0),
+                  (value) => _buttonController.forward(from: 0).then(
+                        (value) => _carouselController.animateTo(
+                          MediaQuery.of(context).size.width,
+                          duration: Duration(seconds: 1),
+                          curve: Curves.decelerate,
+                        ),
+                      ),
                 ),
           ),
     );
@@ -68,18 +93,29 @@ class _LandingScreenState extends State<LandingScreen>
         child: ConstrainedBox(
           constraints: const BoxConstraints.expand(),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               FadeTransition(
                 opacity: _imageController,
-                child: SlideTransition(
-                  position: _imageAnimation,
-                  child: SizedBox.square(
-                    dimension: MediaQuery.of(context).size.height / 4,
-                    child: SvgPicture.asset(
-                      "svgs/day-sunny.svg",
-                      colorFilter: ColorFilter.mode(Theme.of(context).colorScheme.primary, BlendMode.srcIn),
-                      fit: BoxFit.fitHeight,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: 200,
+                  ),
+                  child: CarouselView(
+                    itemExtent: MediaQuery.of(context).size.width / 1.75,
+                    controller: _carouselController,
+                    shrinkExtent: 12,
+                    children: List.generate(
+                      _weatherIcons.length,
+                      (index) => SvgPicture.asset(
+                        _weatherIcons[index],
+                        key: Key(_weatherIcons[index]),
+                        colorFilter: ColorFilter.mode(
+                          Theme.of(context).colorScheme.primary,
+                          BlendMode.srcIn,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -120,7 +156,7 @@ class _LandingScreenState extends State<LandingScreen>
                 ),
               ),
               SizedBox(
-                height: MediaQuery.of(context).size.height / 7,
+                height: 50,
               ),
               FadeTransition(
                 opacity: _buttonController,
@@ -144,10 +180,13 @@ class _LandingScreenState extends State<LandingScreen>
                             .read<Weathers>()
                             .updateCurrentLocationWeather()
                             .then((value) {
-                              if(context.mounted){
-                                context.read<ColorSchemeNotifier>().colorScheme = value.colorScheme;
-                                context.read<ColorSchemeNotifier>().darkColorScheme = value.darkColorScheme;
-                              }
+                          if (context.mounted) {
+                            context.read<ColorSchemeNotifier>().colorScheme =
+                                value.colorScheme;
+                            context
+                                .read<ColorSchemeNotifier>()
+                                .darkColorScheme = value.darkColorScheme;
+                          }
                         });
                         //     .catchError((e) {
                         //       if(context.mounted){
@@ -158,12 +197,13 @@ class _LandingScreenState extends State<LandingScreen>
                         //         );
                         //       }
                         // });
-                        Navigator.pushNamed(context, '/');
+                        Navigator.popAndPushNamed(context, '/');
                       },
-                      child:  Text(
+                      child: Text(
                         "Get Started",
                         style: kLandingButtonTextStyle.copyWith(
-                          color: Theme.of(context).colorScheme.onPrimaryContainer
+                          color:
+                              Theme.of(context).colorScheme.onPrimaryContainer,
                         ),
                       ),
                     ),

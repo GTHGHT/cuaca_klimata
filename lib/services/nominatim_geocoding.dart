@@ -65,6 +65,7 @@ class NominatimGeocoding implements GeocodingIntegration {
     "Germany": "de",
     "Djibouti": "dj",
     "Denmark": "dk",
+    "Deutschland": "de",
     "Dominica": "dm",
     "Dominican Republic": "do",
     "Algeria": "dz",
@@ -267,7 +268,7 @@ class NominatimGeocoding implements GeocodingIntegration {
   @override
   Future<GeoInfo> getGeoByLocation(double latitude, double longitude) async {
     String reverseLink =
-        "${nominatimHeader}reverse?lat=$latitude&lon=$longitude&format=jsonv2";
+        "${nominatimHeader}reverse?lat=$latitude&lon=$longitude&format=jsonv2&accept-language=en";
     debugPrint(reverseLink);
     var response = await NetworkHelper.getAPIResponse(reverseLink);
     GeoInfo info = _parseReverseGeocoding(response)
@@ -297,7 +298,8 @@ class NominatimGeocoding implements GeocodingIntegration {
     postalCode = postalCode != null ? "&postalCode=$postalCode" : "";
 
     String searchLink =
-        "${nominatimHeader}search?format=jsonv2&limit=1$street$city$county$state$country$postalCode";
+        "${nominatimHeader}search?format=jsonv2&limit=1$street$city$county$state$country$postalCode&accept-language=en";
+    debugPrint(searchLink);
     var response = await NetworkHelper.getAPIResponse(searchLink);
     return _parseGeocoding(response);
   }
@@ -305,7 +307,8 @@ class NominatimGeocoding implements GeocodingIntegration {
   @override
   Future<GeoInfo> getGeoByQuery(String query) async {
     String searchLink =
-        "${nominatimHeader}search?q=$query&format=jsonv2&limit=1";
+        "${nominatimHeader}search?q=${query.toLowerCase()}&format=jsonv2&limit=1&accept-language=en";
+    debugPrint(searchLink);
     var response = await NetworkHelper.getAPIResponse(searchLink);
     return _parseGeocoding(response);
   }
@@ -354,6 +357,7 @@ class NominatimGeocoding implements GeocodingIntegration {
   }
 
   String _getCountryCode(String countryName) {
-    return _countryCodeMapping[countryName] ?? "id";
+    debugPrint(countryName);
+    return _countryCodeMapping[countryName] ?? "ID";
   }
 }

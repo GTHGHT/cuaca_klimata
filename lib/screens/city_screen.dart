@@ -44,7 +44,12 @@ class CityScreen extends StatelessWidget {
           constraints: const BoxConstraints.expand(),
           padding: const EdgeInsets.all(20),
           child: TextField(
-            onSubmitted: (_) => updateWeather(context),
+            onSubmitted: (_) async {
+              await updateWeather(context);
+              if (context.mounted) {
+                Navigator.popUntil(context, ModalRoute.withName("/"));
+              }
+            },
             controller: cityController,
             style: kSearchCityTextStyle,
             decoration: InputDecoration(
@@ -62,7 +67,7 @@ class CityScreen extends StatelessWidget {
                 onPressed: () async {
                   await updateWeather(context);
                   if (context.mounted) {
-                    Navigator.pop(context);
+                    Navigator.popUntil(context, ModalRoute.withName("/"));
                   }
                 },
                 icon: Icon(

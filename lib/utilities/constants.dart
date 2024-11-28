@@ -1124,7 +1124,7 @@ const kThunderstormDarkCS = ColorScheme(
 // const kForecastTileColor = Color(0xFF4D4D4D);
 
 const kTempTextStyle = TextStyle(
-  fontFamily: 'Noto Sans',
+  fontFamily: 'Quicksand',
   fontWeight: FontWeight.bold,
   fontSize: 72,
 );

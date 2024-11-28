@@ -6,7 +6,6 @@ import 'data_class/weather_code.dart';
 import 'data_class/weather_forecast.dart';
 import 'interface/geocoding_integration.dart';
 import 'interface/weather_integration.dart';
-import 'package:collection/collection.dart';
 import 'networking.dart';
 
 class OpenMeteoWeather implements WeatherIntegration {
@@ -78,7 +77,7 @@ class OpenMeteoWeather implements WeatherIntegration {
 
   @override
   Future<Weather> getCityWeather(String cityName) async {
-    GeoInfo cityGeoInfo = await geocoding.getGeoByPlace(city: cityName);
+    GeoInfo cityGeoInfo = await geocoding.getGeoByQuery(cityName);
     String cityWeatherLink = "${openMeteoHeader}forecast"
         "?latitude=${cityGeoInfo.latitude}&longitude=${cityGeoInfo.longitude}"
         "&current=temperature_2m,relative_humidity_2m,is_day,weather_code,"
@@ -86,7 +85,9 @@ class OpenMeteoWeather implements WeatherIntegration {
         "pressure_msl&timezone=auto";
     var response = await NetworkHelper.getAPIResponse(cityWeatherLink);
     Weather resultWeather = _getWeatherFromJson(response)
-      ..city = cityGeoInfo.cityName;
+      ..city = cityGeoInfo.cityName
+      ..countryCode = cityGeoInfo.countryCode
+    ..countryName = cityGeoInfo.countryName;
     return resultWeather;
   }
 
@@ -101,13 +102,16 @@ class OpenMeteoWeather implements WeatherIntegration {
     var response = await NetworkHelper.getAPIResponse(currentWeatherLink);
     GeoInfo currentGeoInfo = await geocoding.getGeoByLocation(lat, lon);
     Weather resultWeather = _getWeatherFromJson(response)
-      ..city = currentGeoInfo.cityName;
+      ..city = currentGeoInfo.cityName
+      ..countryCode = currentGeoInfo.countryCode
+      ..countryName = currentGeoInfo.countryName;
     return resultWeather;
   }
 
   @override
   Future<WeatherForecast> getWeatherForecast(double lat, double lon) async {
-    String weatherForecastLink = "${openMeteoHeader}forecast?latitude=$lat&longitude=$lon"
+    String weatherForecastLink =
+        "${openMeteoHeader}forecast?latitude=$lat&longitude=$lon"
         "&hourly=temperature_2m,relative_humidity_2m,is_day,weather_code,"
         "wind_speed_10m,cloud_cover,pressure_msl&daily=temperature_2m_min,"
         "temperature_2m_max,precipitation_probability_max,weather_code,"
@@ -156,8 +160,7 @@ class OpenMeteoWeather implements WeatherIntegration {
     List<String> hTimeJson = json["time"]?.cast<String>() ?? [];
     List<HourlyWeather> hwResult = [];
     for (var i = 0; i < hTimeJson.length; i++) {
-      WeatherCode wCode =
-          _getWeatherCode(json["weather_code"]?[i] ?? -1);
+      WeatherCode wCode = _getWeatherCode(json["weather_code"]?[i] ?? -1);
       num temp = json["temperature_2m"]?[i] ?? -1.0;
       num humidity = json["relative_humidity_2m"]?[i] ?? -1.0;
       num windSpeed = json["wind_speed_10m"]?[i] ?? -1;
@@ -183,8 +186,7 @@ class OpenMeteoWeather implements WeatherIntegration {
     List<String> dTimeJson = json["time"]?.cast<String>() ?? [];
     List<DailyWeather> dwResult = [];
     for (var i = 0; i < dTimeJson.length; i++) {
-      WeatherCode wCode =
-          _getWeatherCode(json["weather_code"]?[i] ?? -1);
+      WeatherCode wCode = _getWeatherCode(json["weather_code"]?[i] ?? -1);
       num tempMin = json["temperature_2m_min"]?[i] ?? -1;
       num tempMax = json["temperature_2m_max"]?[i] ?? -1;
       num precipProb = json["precipitation_probability_max"]?[i] ?? -1;

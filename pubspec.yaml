@@ -84,15 +84,11 @@ flutter:
     - family: Quicksand
       fonts:
         - asset: fonts/Quicksand.ttf
-        - asset: fonts/Quicksand-Bold.ttf
-          weight: 700
         - asset: fonts/Quicksand-Medium.ttf
           weight: 500
     - family: Noto Sans
       fonts:
         - asset: fonts/NotoSans.ttf
-        - asset: fonts/NotoSans-Bold.ttf
-          weight: 700
 
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
