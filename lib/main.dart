@@ -1,30 +1,68 @@
 import 'package:cuaca_klimata/services/color_scheme_notifier.dart';
+import 'package:cuaca_klimata/services/weather_forecast_service.dart';
 import 'package:cuaca_klimata/utilities/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import '../screens/landing_screen.dart';
-import 'screens/city_screen.dart';
-import 'screens/forecast_screen.dart';
-import 'screens/main_screen.dart';
-import 'services/weathers.dart';
+import 'screens/city/city_screen.dart';
+import 'screens/forecast/forecast_screen.dart';
+import 'screens/landing/landing_screen.dart';
+import 'screens/main/main_screen.dart';
+import 'services/interface/geocoding_integration.dart';
+import 'services/interface/weather_integration.dart';
+import 'services/nominatim_geocoding.dart';
+import 'services/open_meteo_weather.dart';
+import 'services/weather_service.dart';
 
-void main() {
+void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+Future<WeatherIntegration> loadWeatherIntegration() async {
+  SharedPreferencesAsync spAsync = SharedPreferencesAsync();
+  String? geoServicePref = await spAsync.getString('geocoding_integration');
+  GeocodingIntegration geoWeatherService = switch (geoServicePref) {
+    'nominatim' => NominatimGeocoding(),
+    _ => NominatimGeocoding()
+  };
+
+  String? wServicePref = await spAsync.getString('weather_integration');
+  WeatherIntegration currentWeatherService = switch (wServicePref) {
+    "open_meteo" => OpenMeteoWeather(geoWeatherService),
+    _ => OpenMeteoWeather(geoWeatherService),
+  };
+  return currentWeatherService;
+}
+
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  WeatherIntegration? weatherIntegration;
+
+  @override
+  void initState() {
+    loadWeatherIntegration().then((value) => weatherIntegration = value);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<Weathers>(create: (_) {
-          return Weathers(null);
+        ChangeNotifierProvider<WeatherService>(create: (_) {
+          return WeatherService(weatherIntegration);
+        }),
+        ChangeNotifierProvider<WeatherForecastService>(create: (_) {
+          return WeatherForecastService(weatherIntegration);
         }),
         ChangeNotifierProvider<ColorSchemeNotifier>(create: (_) {
-          return ColorSchemeNotifier(kFogCS, kFogDarkCS);
+          return ColorSchemeNotifier(kCloudyCS, kCloudyDarkCS);
         })
       ],
       child: Builder(builder: (context) {
@@ -85,9 +123,9 @@ class MyApp extends StatelessWidget {
           themeMode: ThemeMode.system,
           routes: {
             '/landing': (context) => const LandingScreen(),
-            '/': (context) => const MainScreen(),
+            '/main': (context) => const MainScreen(),
             '/city': (context) => CityScreen(),
-            '/forecast': (context) => const ForecastScreen(),
+            // '/forecast': (context) => const ForecastScreen(),
           },
           initialRoute: '/landing',
         );

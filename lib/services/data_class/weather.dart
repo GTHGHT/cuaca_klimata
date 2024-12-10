@@ -9,7 +9,7 @@ class Weather {
   late WeatherCode weatherCode;
   late bool isDay;
   late double temp;
-  late double feelsLike;
+  late double? feelsLike;
   late int cloudCover;
   late double windDirection;
   late double windSpeed;
@@ -27,7 +27,7 @@ class Weather {
     required this.weatherCode,
     required this.isDay,
     required this.temp,
-    this.feelsLike = -1.0,
+    this.feelsLike,
     required this.cloudCover,
     required this.windDirection,
     required this.windSpeed,

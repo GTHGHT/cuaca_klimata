@@ -82,7 +82,7 @@ class OpenMeteoWeather implements WeatherIntegration {
         "?latitude=${cityGeoInfo.latitude}&longitude=${cityGeoInfo.longitude}"
         "&current=temperature_2m,relative_humidity_2m,is_day,weather_code,"
         "wind_speed_10m,wind_direction_10m,wind_gusts_10m,cloud_cover,"
-        "pressure_msl&timezone=auto";
+        "pressure_msl,apparent_temperature&timezone=auto";
     var response = await NetworkHelper.getAPIResponse(cityWeatherLink);
     Weather resultWeather = _getWeatherFromJson(response)
       ..city = cityGeoInfo.cityName
@@ -97,7 +97,7 @@ class OpenMeteoWeather implements WeatherIntegration {
         "${openMeteoHeader}forecast?latitude=$lat&longitude=$lon&current="
         "temperature_2m,relative_humidity_2m,is_day,weather_code,cloud_cover,"
         "pressure_msl,wind_speed_10m,wind_direction_10m,"
-        "wind_gusts_10m&timezone=auto";
+        "wind_gusts_10m,apparent_temperature&timezone=auto";
     debugPrint(currentWeatherLink);
     var response = await NetworkHelper.getAPIResponse(currentWeatherLink);
     GeoInfo currentGeoInfo = await geocoding.getGeoByLocation(lat, lon);
@@ -126,6 +126,7 @@ class OpenMeteoWeather implements WeatherIntegration {
   Weather _getWeatherFromJson(Map<String, dynamic> json) {
     Map<String, dynamic> current = json['current'];
     return Weather(
+      time: DateTime.tryParse(current['time']),
       latitude: json["latitude"],
       longitude: json["longitude"],
       city: "",
@@ -133,6 +134,7 @@ class OpenMeteoWeather implements WeatherIntegration {
       weatherCode: _getWeatherCode(current["weather_code"]),
       isDay: current["is_day"] == 1,
       temp: (current["temperature_2m"] as num).toDouble(),
+      feelsLike: (current["apparent_temperature"] as num).toDouble(),
       cloudCover: (current["cloud_cover"] as num).toInt(),
       windDirection: (current["wind_direction_10m"] as num).toDouble(),
       windSpeed: (current["wind_speed_10m"] as num).toDouble(),

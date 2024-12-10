@@ -64,12 +64,4 @@ class HourlyWeather {
       required this.cloudCover,
       required this.pressure,
       required this.weatherCode});
-
-  String get hour12 {
-    return time.hour < 13
-        ? (time.hour == 0 ? "12 PM" : "${time.hour} AM")
-        : "${time.hour - 12} PM";
-  }
-
-  String get hour24 => "${time.hour}:${time.minute.toString().padLeft(2,'0')}";
 }

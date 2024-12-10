@@ -36,6 +36,21 @@ extension WeatherCodeExtension on WeatherCode{
     };
   }
 
+  String get displayName => switch(this){
+    WeatherCode.none => "None",
+    WeatherCode.clear => "Clear Sky",
+    WeatherCode.cloudy => "Cloudy",
+    WeatherCode.fog => "Fog",
+    WeatherCode.drizzle => "Drizzle",
+    WeatherCode.freezingDrizzle => "Freezing Drizzle",
+    WeatherCode.rain => "Rain",
+    WeatherCode.freezingRain => "Freezing Rain",
+    WeatherCode.snow => "Snow",
+    WeatherCode.rainShower => "Rain Shower",
+    WeatherCode.snowShower => "Snow Shower",
+    WeatherCode.thunderstorm => "Thunderstorm",
+  };
+
   ColorScheme getColorScheme(Brightness brightness){
     if(brightness == Brightness.light){
       return colorScheme;
@@ -46,7 +61,7 @@ extension WeatherCodeExtension on WeatherCode{
 
   ColorScheme get colorScheme {
     return switch(this){
-      WeatherCode.none => kFogCS,
+      WeatherCode.none => kCloudyCS,
       WeatherCode.clear => kClearCS,
       WeatherCode.cloudy => kCloudyCS,
       WeatherCode.fog => kFogCS,
@@ -63,7 +78,7 @@ extension WeatherCodeExtension on WeatherCode{
 
   ColorScheme get darkColorScheme{
     return switch(this){
-      WeatherCode.none => kFogDarkCS,
+      WeatherCode.none => kCloudyDarkCS,
       WeatherCode.clear => kClearDarkCS,
       WeatherCode.cloudy => kCloudyDarkCS,
       WeatherCode.fog => kFogDarkCS,

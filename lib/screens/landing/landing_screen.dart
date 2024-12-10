@@ -1,13 +1,8 @@
 import 'dart:async';
 
-import 'package:cuaca_klimata/services/color_scheme_notifier.dart';
-import 'package:cuaca_klimata/services/data_class/weather_code.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:provider/provider.dart';
-
-import '../services/weathers.dart';
-import '../utilities/constants.dart';
 
 class LandingScreen extends StatefulWidget {
   const LandingScreen({super.key});
@@ -105,7 +100,7 @@ class _LandingScreenState extends State<LandingScreen>
                   child: CarouselView(
                     itemExtent: MediaQuery.of(context).size.width / 1.75,
                     controller: _carouselController,
-                    shrinkExtent: 12,
+                    shrinkExtent: 8,
                     children: List.generate(
                       _weatherIcons.length,
                       (index) => SvgPicture.asset(
@@ -162,50 +157,21 @@ class _LandingScreenState extends State<LandingScreen>
                 opacity: _buttonController,
                 child: SlideTransition(
                   position: _buttonAnimation,
-                  child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    margin: const EdgeInsets.symmetric(
-                      vertical: 25,
-                      horizontal: 10,
+                  child: FilledButton(
+                    style: FilledButton.styleFrom(
+                      fixedSize:
+                          Size(MediaQuery.of(context).size.width - 64, 48),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8, horizontal: 16),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    alignment: Alignment.center,
-                    child: InkWell(
-                      onTap: () {
-                        context
-                            .read<Weathers>()
-                            .updateCurrentLocationWeather()
-                            .then((value) {
-                          if (context.mounted) {
-                            context.read<ColorSchemeNotifier>().colorScheme =
-                                value.colorScheme;
-                            context
-                                .read<ColorSchemeNotifier>()
-                                .darkColorScheme = value.darkColorScheme;
-                          }
-                        });
-                        //     .catchError((e) {
-                        //       if(context.mounted){
-                        //         ScaffoldMessenger.of(context).showSnackBar(
-                        //           SnackBar(
-                        //             content: Text(e.toString()),
-                        //           ),
-                        //         );
-                        //       }
-                        // });
-                        Navigator.popAndPushNamed(context, '/');
-                      },
-                      child: Text(
-                        "Get Started",
-                        style: kLandingButtonTextStyle.copyWith(
-                          color:
-                              Theme.of(context).colorScheme.onPrimaryContainer,
-                        ),
-                      ),
+                    onPressed: () {
+                      Navigator.popAndPushNamed(context, '/main');
+                    },
+                    child: Text(
+                      "Get Started",
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          ),
                     ),
                   ),
                 ),

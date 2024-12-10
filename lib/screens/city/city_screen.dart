@@ -2,9 +2,9 @@ import 'package:cuaca_klimata/services/data_class/weather_code.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../services/color_scheme_notifier.dart';
-import '../services/weathers.dart';
-import '../utilities/constants.dart';
+import '../../services/color_scheme_notifier.dart';
+import '../../services/weather_service.dart';
+import '../../utilities/constants.dart';
 
 class CityScreen extends StatelessWidget {
   final TextEditingController cityController = TextEditingController();
@@ -12,7 +12,7 @@ class CityScreen extends StatelessWidget {
   CityScreen({super.key});
 
   Future<void> updateWeather(BuildContext context) async {
-    WeatherCode result = await Provider.of<Weathers>(context, listen: false)
+    WeatherCode result = await Provider.of<WeatherService>(context, listen: false)
         .updateCityWeather(cityController.text)
         .catchError((e) {
       if (context.mounted) {
