@@ -1,8 +1,5 @@
-import 'package:cuaca_klimata/screens/main/forecast_bottom_sheet.dart';
-import 'package:cuaca_klimata/screens/main/hourly_forecast_chart.dart';
+import 'package:cuaca_klimata/screens/main/forecast/forecast_bottom_sheet.dart';
 import 'package:cuaca_klimata/services/data_class/weather_code.dart';
-import 'package:cuaca_klimata/services/data_class/weather_forecast.dart';
-import 'package:cuaca_klimata/services/weather_forecast_service.dart';
 import 'package:cuaca_klimata/utilities/double_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';

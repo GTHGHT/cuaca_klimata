@@ -1,13 +1,8 @@
-import 'package:cuaca_klimata/services/interface/geocoding_integration.dart';
-import 'package:cuaca_klimata/services/nominatim_geocoding.dart';
-import 'package:cuaca_klimata/services/open_meteo_weather.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/location.dart';
 import 'data_class/weather_code.dart';
-import 'data_class/weather_forecast.dart';
 import 'data_class/weather.dart';
 import 'interface/weather_integration.dart';
 

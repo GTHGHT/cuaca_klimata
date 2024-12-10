@@ -6,11 +6,11 @@ import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../../services/data_class/weather_forecast.dart';
-import '../../services/weather_forecast_service.dart';
-import '../../services/weather_service.dart';
+import '../../../services/data_class/weather_forecast.dart';
+import '../../../services/weather_forecast_service.dart';
+import '../../../services/weather_service.dart';
+import '../weather_info_item.dart';
 import 'hourly_forecast_chart.dart';
-import 'weather_info_item.dart';
 
 class ForecastBottomSheet extends StatefulWidget {
   const ForecastBottomSheet({super.key});

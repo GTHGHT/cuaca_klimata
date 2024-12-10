@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'screens/city/city_screen.dart';
-import 'screens/forecast/forecast_screen.dart';
 import 'screens/landing/landing_screen.dart';
 import 'screens/main/main_screen.dart';
 import 'services/interface/geocoding_integration.dart';
