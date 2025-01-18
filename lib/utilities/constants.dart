@@ -14,6 +14,9 @@ const kLandingButtonTextStyle = TextStyle(
   fontSize: 24,
 );
 
+const kGeocodingPrefKey = "geocoding_integration";
+const kWeatherPrefKey = "weather_integration";
+
 final kClearCS = ColorScheme.fromSeed(
   seedColor: Color(0xFFFFDF22),
   brightness: Brightness.light,

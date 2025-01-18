@@ -14,10 +14,17 @@ class _LandingScreenState extends State<LandingScreen>
     with TickerProviderStateMixin {
   late AnimationController _imageController;
   late AnimationController _textController;
-  late Animation<Offset> _textAnimation;
+  late final Animation<Offset> _textAnimation = Tween<Offset>(
+    begin: const Offset(0, 0.5),
+    end: Offset.zero,
+  ).animate(_textController);
   late AnimationController _buttonController;
-  late Animation<Offset> _buttonAnimation;
+  late final Animation<Offset> _buttonAnimation = Tween<Offset>(
+    begin: const Offset(0, 0.5),
+    end: Offset.zero,
+  ).animate(_buttonController);
   late CarouselController _carouselController;
+  bool isScrolling = true;
 
   final _weatherIcons = [
     "svgs/day-sunny.svg",
@@ -51,27 +58,22 @@ class _LandingScreenState extends State<LandingScreen>
       duration: const Duration(seconds: 1),
       vsync: this,
     );
-    _textAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.5),
-      end: Offset.zero,
-    ).animate(_textController);
     _buttonController =
         AnimationController(duration: const Duration(seconds: 1), vsync: this);
-    _buttonAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.5),
-      end: Offset.zero,
-    ).animate(_buttonController);
     _carouselController = CarouselController(initialItem: 1);
+
     Timer(
       const Duration(milliseconds: 200),
       () => _imageController.forward(from: 0).then(
             (value) => _textController.forward(from: 0).then(
                   (value) => _buttonController.forward(from: 0).then(
-                        (value) => _carouselController.animateTo(
-                          MediaQuery.of(context).size.width,
-                          duration: Duration(seconds: 1),
-                          curve: Curves.decelerate,
-                        ),
+                        (value) => _carouselController
+                            .animateTo(
+                              _carouselController.position.maxScrollExtent,
+                              duration: Duration(seconds: 20),
+                              curve: Curves.linear,
+                            )
+                            .whenComplete(() => isScrolling = false),
                       ),
                 ),
           ),
@@ -100,6 +102,11 @@ class _LandingScreenState extends State<LandingScreen>
                     itemExtent: MediaQuery.of(context).size.width / 1.75,
                     controller: _carouselController,
                     shrinkExtent: 8,
+                    onTap: (index){
+                      if(isScrolling){
+                        _carouselController.jumpTo(_carouselController.offset);
+                      }
+                    },
                     children: List.generate(
                       _weatherIcons.length,
                       (index) => SvgPicture.asset(

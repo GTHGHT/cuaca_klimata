@@ -11,27 +11,6 @@ class CityScreen extends StatelessWidget {
 
   CityScreen({super.key});
 
-  Future<void> updateWeather(BuildContext context) async {
-    // WeatherCode result = await Provider.of<WeatherNotifier>(context, listen: false)
-    //     .updateLocationWeather(cityController.text)
-    //     .catchError((e) {
-    //   if (context.mounted) {
-    //     ScaffoldMessenger.of(context).showSnackBar(
-    //       SnackBar(
-    //         content: Text(e.toString()),
-    //       ),
-    //     );
-    //     debugPrint(e);
-    //   }
-    //   return WeatherCode.none;
-    // });
-    // if (context.mounted) {
-    //   context.read<ColorSchemeNotifier>().colorScheme = result.colorScheme;
-    //   context.read<ColorSchemeNotifier>().darkColorScheme =
-    //       result.darkColorScheme;
-    // }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,7 +22,7 @@ class CityScreen extends StatelessWidget {
       body: SafeArea(
         child: Container(
           constraints: const BoxConstraints.expand(),
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           child: Column(
             children: [
               TextField(
@@ -55,15 +34,17 @@ class CityScreen extends StatelessWidget {
                 controller: cityController,
                 style: kSearchCityTextStyle,
                 decoration: InputDecoration(
-                  labelText: "Search City",
+                  hintText: "Search City",
                   border: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.outline,
-                      ),
-                      borderRadius: BorderRadius.circular(20)),
-                  contentPadding: const EdgeInsets.all(5).copyWith(left: 15),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  contentPadding: const EdgeInsets.fromLTRB(15, 0, 0, 0),
                   // fillColor: Theme.of(context).cardColor,
                   // filled: true,
+                  isCollapsed: true,
                   floatingLabelBehavior: FloatingLabelBehavior.never,
                   suffix: IconButton(
                     alignment: Alignment.topRight,
@@ -99,9 +80,7 @@ class CityScreen extends StatelessWidget {
                 "${geoInfo?.latitude ?? '0.0'}, ${geoInfo?.longitude ?? '0.0'}"),
             onTap: () {
               if (geoInfo != null) {
-                context
-                    .read<WeatherNotifier>()
-                    .updateLocationWeather(geoInfo);
+                context.read<WeatherNotifier>().updateLocationWeather(geoInfo);
                 Navigator.pop(context);
               }
             },

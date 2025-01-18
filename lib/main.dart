@@ -1,6 +1,7 @@
 import 'package:cuaca_klimata/services/notifier/color_scheme_notifier.dart';
 import 'package:cuaca_klimata/services/notifier/search_geo_notifier.dart';
 import 'package:cuaca_klimata/services/notifier/weather_forecast_notifier.dart';
+import 'package:cuaca_klimata/utilities/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,13 +22,13 @@ void main() async {
 Future<(WeatherIntegration, GeocodingIntegration)>
     loadWeatherIntegration() async {
   SharedPreferencesAsync spAsync = SharedPreferencesAsync();
-  String? geoServicePref = await spAsync.getString('geocoding_integration');
+  String? geoServicePref = await spAsync.getString(kGeocodingPrefKey);
   GeocodingIntegration geoWeatherService = switch (geoServicePref) {
     'nominatim' => NominatimGeocoding(),
     _ => NominatimGeocoding()
   };
 
-  String? wServicePref = await spAsync.getString('weather_integration');
+  String? wServicePref = await spAsync.getString(kWeatherPrefKey);
   WeatherIntegration currentWeatherService = switch (wServicePref) {
     "open_meteo" => OpenMeteoWeather(geoWeatherService),
     _ => OpenMeteoWeather(geoWeatherService),

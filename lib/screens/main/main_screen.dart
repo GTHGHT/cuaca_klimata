@@ -34,7 +34,23 @@ class _MainScreenState extends State<MainScreen>
     Future.microtask(() {
       var ctx = context;
       if (ctx.mounted) {
-        ctx.read<WeatherNotifier>().updateCurrentLocationWeather();
+        ctx
+            .read<WeatherNotifier>()
+            .updateCurrentLocationWeather()
+            .whenComplete(() {
+          var ctxAdvanced = ctx;
+          if (ctxAdvanced.mounted) {
+            final weatherCode =
+                ctx.read<WeatherNotifier>().currentWeather?.weatherCode;
+            if (ctx.read<ColorSchemeNotifier>().colorScheme !=
+                weatherCode?.colorScheme) {
+              ctx.read<ColorSchemeNotifier>().colorScheme =
+                  weatherCode?.colorScheme ?? kFogCS;
+              ctx.read<ColorSchemeNotifier>().darkColorScheme =
+                  weatherCode?.darkColorScheme ?? kFogDarkCS;
+            }
+          }
+        });
       }
     });
   }
@@ -65,13 +81,7 @@ class _MainScreenState extends State<MainScreen>
     setState(() {
       _animController.forward(from: 0);
     });
-    final weatherCode = context.read<WeatherNotifier>().currentWeather?.weatherCode;
-    if(context.read<ColorSchemeNotifier>().colorScheme != weatherCode?.colorScheme){
-      context.read<ColorSchemeNotifier>().colorScheme =
-          weatherCode?.colorScheme ?? kFogCS;
-      context.read<ColorSchemeNotifier>().darkColorScheme =
-          weatherCode?.darkColorScheme ?? kFogDarkCS;
-    }
+
     return SlideTransition(
       position: Tween<Offset>(begin: const Offset(0, -0.05), end: Offset.zero)
           .animate(_animController),
@@ -195,8 +205,6 @@ class _MainScreenState extends State<MainScreen>
     );
   }
 
-
-
   Container _buildCompactLocation() => Container(
         margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
         padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -206,46 +214,42 @@ class _MainScreenState extends State<MainScreen>
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _buildCompactCityAndCountry(),
-            _buildCompactFlag()
-          ],
+          children: [_buildCompactCityAndCountry(), _buildCompactFlag()],
         ),
       );
 
   Column _buildCompactCityAndCountry() => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                context.select<WeatherNotifier, String>(
-                    (value) => value.currentWeather?.city ?? ""),
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              Text(
-                context.select<WeatherNotifier, String>(
-                    (value) => value.currentWeather?.countryName ?? ""),
-                style: Theme.of(context).textTheme.titleSmall,
-              )
-            ],
-          );
-
-  Builder _buildCompactFlag() =>
-    Builder(builder: (context) {
-      String countryCode = context
-          .watch<WeatherNotifier>()
-          .currentWeather
-          ?.countryCode
-          .toUpperCase() ??
-          "UN";
-      var firstChar = countryCode.codeUnitAt(0) - 0x41 + 0x1F1E6;
-      var secondChar = countryCode.codeUnitAt(1) - 0x41 + 0x1F1E6;
-      String flag = String.fromCharCode(firstChar) +
-          String.fromCharCode(secondChar);
-      return Text(
-        flag,
-        style: TextStyle(fontSize: 40),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            context.select<WeatherNotifier, String>(
+                (value) => value.currentWeather?.city ?? ""),
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          Text(
+            context.select<WeatherNotifier, String>(
+                (value) => value.currentWeather?.countryName ?? ""),
+            style: Theme.of(context).textTheme.titleSmall,
+          )
+        ],
       );
-    });
+
+  Builder _buildCompactFlag() => Builder(builder: (context) {
+        String countryCode = context
+                .watch<WeatherNotifier>()
+                .currentWeather
+                ?.countryCode
+                .toUpperCase() ??
+            "UN";
+        var firstChar = countryCode.codeUnitAt(0) - 0x41 + 0x1F1E6;
+        var secondChar = countryCode.codeUnitAt(1) - 0x41 + 0x1F1E6;
+        String flag =
+            String.fromCharCode(firstChar) + String.fromCharCode(secondChar);
+        return Text(
+          flag,
+          style: TextStyle(fontSize: 40),
+        );
+      });
 
   Container _buildCompactWeather() => Container(
         margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),

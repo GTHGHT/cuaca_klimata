@@ -42,6 +42,7 @@ dependencies:
   shared_preferences: ^2.3.3
   flutter_svg: ^2.0.14
   fl_chart: ^0.69.2
+  flutter_settings_screens: ^0.3.4
 
 dev_dependencies:
   flutter_test:
