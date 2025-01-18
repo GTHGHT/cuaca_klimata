@@ -12,4 +12,6 @@ abstract class GeocodingIntegration {
   Future<GeoInfo> getGeoByQuery(String query);
 
   Future<GeoInfo> getGeoByLocation(double latitude, double longitude);
+
+  Future<List<GeoInfo>> searchGeo(String query);
 }

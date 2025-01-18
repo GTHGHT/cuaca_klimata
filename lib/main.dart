@@ -1,6 +1,6 @@
-import 'package:cuaca_klimata/services/color_scheme_notifier.dart';
-import 'package:cuaca_klimata/services/weather_forecast_service.dart';
-import 'package:cuaca_klimata/utilities/constants.dart';
+import 'package:cuaca_klimata/services/notifier/color_scheme_notifier.dart';
+import 'package:cuaca_klimata/services/notifier/search_geo_notifier.dart';
+import 'package:cuaca_klimata/services/notifier/weather_forecast_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,14 +11,15 @@ import 'screens/main/main_screen.dart';
 import 'services/interface/geocoding_integration.dart';
 import 'services/interface/weather_integration.dart';
 import 'services/nominatim_geocoding.dart';
+import 'services/notifier/weather_notifier.dart';
 import 'services/open_meteo_weather.dart';
-import 'services/weather_service.dart';
 
 void main() async {
   runApp(const MyApp());
 }
 
-Future<WeatherIntegration> loadWeatherIntegration() async {
+Future<(WeatherIntegration, GeocodingIntegration)>
+    loadWeatherIntegration() async {
   SharedPreferencesAsync spAsync = SharedPreferencesAsync();
   String? geoServicePref = await spAsync.getString('geocoding_integration');
   GeocodingIntegration geoWeatherService = switch (geoServicePref) {
@@ -31,7 +32,7 @@ Future<WeatherIntegration> loadWeatherIntegration() async {
     "open_meteo" => OpenMeteoWeather(geoWeatherService),
     _ => OpenMeteoWeather(geoWeatherService),
   };
-  return currentWeatherService;
+  return (currentWeatherService, geoWeatherService);
 }
 
 class MyApp extends StatefulWidget {
@@ -43,10 +44,15 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   WeatherIntegration? weatherIntegration;
+  GeocodingIntegration? geocodingIntegration;
 
   @override
   void initState() {
-    loadWeatherIntegration().then((value) => weatherIntegration = value);
+    loadWeatherIntegration().then((value) {
+      var (wi, gi) = value;
+      weatherIntegration = wi;
+      geocodingIntegration = gi;
+    });
     super.initState();
   }
 
@@ -54,15 +60,18 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<WeatherService>(create: (_) {
-          return WeatherService(weatherIntegration);
+        ChangeNotifierProvider<WeatherNotifier>(create: (ref) {
+          return WeatherNotifier(weatherIntegration);
         }),
-        ChangeNotifierProvider<WeatherForecastService>(create: (_) {
-          return WeatherForecastService(weatherIntegration);
+        ChangeNotifierProvider<WeatherForecastNotifier>(create: (_) {
+          return WeatherForecastNotifier(weatherIntegration);
+        }),
+        ChangeNotifierProvider<SearchGeoNotifier>(create: (_) {
+          return SearchGeoNotifier(geocodingIntegration);
         }),
         ChangeNotifierProvider<ColorSchemeNotifier>(create: (_) {
-          return ColorSchemeNotifier(kCloudyCS, kCloudyDarkCS);
-        })
+          return ColorSchemeNotifier();
+        }),
       ],
       child: Builder(builder: (context) {
         var whiteTypo = Typography().white;

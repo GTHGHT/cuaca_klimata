@@ -1,18 +1,19 @@
+import 'package:cuaca_klimata/services/data_class/geo_info.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:geolocator/geolocator.dart';
 
-import '../services/location.dart';
-import 'data_class/weather_code.dart';
-import 'data_class/weather.dart';
-import 'interface/weather_integration.dart';
+import '../location.dart';
+import '../data_class/weather_code.dart';
+import '../data_class/weather.dart';
+import '../interface/weather_integration.dart';
 
-class WeatherService extends ChangeNotifier {
+class WeatherNotifier extends ChangeNotifier {
   Weather? currentWeather;
   WeatherIntegration? weatherIntegration;
 
-  bool loading = true;
+  bool loading;
 
-  WeatherService(this.weatherIntegration) : loading = true;
+  WeatherNotifier(this.weatherIntegration) : loading = true;
 
   Future<WeatherCode> updateCurrentLocationWeather() async {
     WeatherIntegration? wi = weatherIntegration;
@@ -44,20 +45,16 @@ class WeatherService extends ChangeNotifier {
     return WeatherCode.none;
   }
 
-  Future<WeatherCode> updateCityWeather(String city) async {
+  Future<WeatherCode> updateLocationWeather(GeoInfo geoInfo) async {
     WeatherIntegration? wi = weatherIntegration;
     if (wi != null) {
-      if (city.isEmpty) {
-        return WeatherCode.none;
-      }
       loading = true;
       notifyListeners();
-      city = city.trim().replaceAll(" ", "%20");
-      Weather cityWeather = await wi.getCityWeather(city);
-      currentWeather = cityWeather;
+      Weather locationWeather = await wi.getGeoInfoWeather(geoInfo);
+      currentWeather = locationWeather;
       loading = false;
       notifyListeners();
-      return cityWeather.weatherCode;
+      return locationWeather.weatherCode;
     }
     return WeatherCode.none;
   }

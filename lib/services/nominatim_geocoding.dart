@@ -300,17 +300,27 @@ class NominatimGeocoding implements GeocodingIntegration {
     String searchLink =
         "${nominatimHeader}search?format=jsonv2&limit=1$street$city$county$state$country$postalCode&accept-language=en";
     debugPrint(searchLink);
-    var response = await NetworkHelper.getAPIResponse(searchLink);
-    return _parseGeocoding(response);
+    List? response = await NetworkHelper.getAPIResponse(searchLink);
+    var firstResponse = response?.firstOrNull;
+    if(firstResponse != null){
+      return _parseGeocoding(firstResponse);
+    } else {
+      throw TypeError();
+    }
   }
 
   @override
   Future<GeoInfo> getGeoByQuery(String query) async {
     String searchLink =
-        "${nominatimHeader}search?q=${query.toLowerCase()}&format=jsonv2&limit=1&accept-language=en";
+        "${nominatimHeader}search?q=${query.toLowerCase().trim()}&format=jsonv2&limit=1&accept-language=en";
     debugPrint(searchLink);
-    var response = await NetworkHelper.getAPIResponse(searchLink);
-    return _parseGeocoding(response);
+    List? response = await NetworkHelper.getAPIResponse(searchLink);
+    var firstResponse = response?.firstOrNull;
+    if(firstResponse != null){
+      return _parseGeocoding(firstResponse);
+    } else {
+      throw TypeError();
+    }
   }
 
   GeoInfo _parseReverseGeocoding(Map<String, dynamic> json) {
@@ -337,15 +347,16 @@ class NominatimGeocoding implements GeocodingIntegration {
         longitude: double.tryParse(lonString) ?? 0.0);
   }
 
-  GeoInfo _parseGeocoding(List<dynamic> json) {
-    if (json.firstOrNull != null) {
-      String dName = json[0]?["display_name"] ?? "";
-      String latString = json[0]?["lat"] ?? "0.0";
-      String lonString = json[0]?["lon"] ?? "0.0";
+  GeoInfo _parseGeocoding(dynamic json) {
+    if (json != null) {
+      debugPrint(json.toString());
+      String dName = json["display_name"] ?? "";
+      String latString = json["lat"] ?? "0.0";
+      String lonString = json["lon"] ?? "0.0";
       String countryName = dName.substring(dName.lastIndexOf(", ") + 2);
       return GeoInfo(
         fullName: dName,
-        cityName: json[0]?["name"] ?? "",
+        cityName: json["name"] ?? "",
         countryName: countryName,
         countryCode: _getCountryCode(countryName),
         latitude: double.tryParse(latString) ?? 0.0,
@@ -359,5 +370,18 @@ class NominatimGeocoding implements GeocodingIntegration {
   String _getCountryCode(String countryName) {
     debugPrint(countryName);
     return _countryCodeMapping[countryName] ?? "ID";
+  }
+
+  @override
+  Future<List<GeoInfo>> searchGeo(String query) async{
+    String searchLink =
+        "${nominatimHeader}search?q=${query.toLowerCase()}&format=jsonv2&accept-language=en";
+    debugPrint(searchLink);
+    var response = await NetworkHelper.getAPIResponse(searchLink);
+    if(response is List){
+      return response.map((value)=> _parseGeocoding(value)).toList();
+    } else {
+      throw TypeError();
+    }
   }
 }

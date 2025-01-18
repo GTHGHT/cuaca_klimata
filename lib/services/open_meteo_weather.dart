@@ -76,7 +76,7 @@ class OpenMeteoWeather implements WeatherIntegration {
   OpenMeteoWeather(this.geocoding);
 
   @override
-  Future<Weather> getCityWeather(String cityName) async {
+  Future<Weather> searchLocationWeather(String cityName) async {
     GeoInfo cityGeoInfo = await geocoding.getGeoByQuery(cityName);
     String cityWeatherLink = "${openMeteoHeader}forecast"
         "?latitude=${cityGeoInfo.latitude}&longitude=${cityGeoInfo.longitude}"
@@ -121,6 +121,22 @@ class OpenMeteoWeather implements WeatherIntegration {
     var response = await NetworkHelper.getAPIResponse(weatherForecastLink);
     WeatherForecast weatherForecast = _getWeatherForecastFromJson(response);
     return weatherForecast;
+  }
+
+  @override
+  Future<Weather> getGeoInfoWeather(GeoInfo geoInfo) async{
+    String currentWeatherLink =
+        "${openMeteoHeader}forecast?latitude=${geoInfo.latitude}&longitude=${geoInfo.longitude}&current="
+        "temperature_2m,relative_humidity_2m,is_day,weather_code,cloud_cover,"
+        "pressure_msl,wind_speed_10m,wind_direction_10m,"
+        "wind_gusts_10m,apparent_temperature&timezone=auto";
+    debugPrint(currentWeatherLink);
+    var response = await NetworkHelper.getAPIResponse(currentWeatherLink);
+    Weather resultWeather = _getWeatherFromJson(response)
+      ..city = geoInfo.cityName
+      ..countryCode = geoInfo.countryCode
+      ..countryName = geoInfo.countryName;
+    return resultWeather;
   }
 
   Weather _getWeatherFromJson(Map<String, dynamic> json) {
@@ -222,4 +238,6 @@ class OpenMeteoWeather implements WeatherIntegration {
     DateTime dt = DateTime.tryParse(time) ?? DateTime.now();
     return (dt.hour > 5 && dt.hour < 18);
   }
+
+
 }

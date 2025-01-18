@@ -14,5 +14,4 @@ class GeoInfo {
       required this.latitude,
       required this.longitude});
 
-
 }

@@ -1,13 +1,14 @@
 import 'package:cuaca_klimata/screens/main/forecast/forecast_bottom_sheet.dart';
 import 'package:cuaca_klimata/services/data_class/weather_code.dart';
+import 'package:cuaca_klimata/utilities/constants.dart';
 import 'package:cuaca_klimata/utilities/double_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../../services/color_scheme_notifier.dart';
-import '../../services/weather_service.dart';
+import '../../services/notifier/color_scheme_notifier.dart';
+import '../../services/notifier/weather_notifier.dart';
 import '../components/loading_widget.dart';
 import 'weather_detail_widget.dart';
 
@@ -20,11 +21,11 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen>
     with SingleTickerProviderStateMixin {
-  late AnimationController controller;
+  late AnimationController _animController;
 
   @override
   void initState() {
-    controller = AnimationController(
+    _animController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
@@ -33,23 +34,14 @@ class _MainScreenState extends State<MainScreen>
     Future.microtask(() {
       var ctx = context;
       if (ctx.mounted) {
-        ctx.read<WeatherService>().updateCurrentLocationWeather().then(
-          (value) {
-            var ctx = context;
-            if (ctx.mounted) {
-              ctx.read<ColorSchemeNotifier>().colorScheme = value.colorScheme;
-              ctx.read<ColorSchemeNotifier>().darkColorScheme =
-                  value.darkColorScheme;
-            }
-          },
-        );
+        ctx.read<WeatherNotifier>().updateCurrentLocationWeather();
       }
     });
   }
 
   @override
   void dispose() {
-    controller.dispose();
+    _animController.dispose();
     super.dispose();
   }
 
@@ -58,7 +50,7 @@ class _MainScreenState extends State<MainScreen>
     return Scaffold(
       appBar: _buildAppBar(context),
       backgroundColor: Theme.of(context).colorScheme.surface,
-      body: context.watch<WeatherService>().loading
+      body: context.watch<WeatherNotifier>().loading
           ? const LoadingWidget()
           : Stack(
               children: [
@@ -71,26 +63,21 @@ class _MainScreenState extends State<MainScreen>
 
   Widget _currentWeatherScreen(BuildContext context) {
     setState(() {
-      controller.forward(from: 0);
+      _animController.forward(from: 0);
     });
+    final weatherCode = context.read<WeatherNotifier>().currentWeather?.weatherCode;
+    if(context.read<ColorSchemeNotifier>().colorScheme != weatherCode?.colorScheme){
+      context.read<ColorSchemeNotifier>().colorScheme =
+          weatherCode?.colorScheme ?? kFogCS;
+      context.read<ColorSchemeNotifier>().darkColorScheme =
+          weatherCode?.darkColorScheme ?? kFogDarkCS;
+    }
     return SlideTransition(
       position: Tween<Offset>(begin: const Offset(0, -0.05), end: Offset.zero)
-          .animate(controller),
+          .animate(_animController),
       child: FadeTransition(
-        opacity: controller,
-        child: Container(
-          decoration: BoxDecoration(
-              // gradient: LinearGradient(
-              //   begin: Alignment.topCenter,
-              //   end: Alignment.bottomCenter,
-              //   colors: [
-              //     Theme.of(context).colorScheme.surface,
-              //     Theme.of(context).colorScheme.secondaryContainer
-              //   ],
-              // ),
-              ),
-          child: _buildExpandedScreen(context),
-        ),
+        opacity: _animController,
+        child: _buildExpandedScreen(context),
       ),
     );
   }
@@ -102,72 +89,17 @@ class _MainScreenState extends State<MainScreen>
         SizedBox(
           height: 16,
         ),
-        Builder(builder: (context) {
-          String countryCode = context
-                  .watch<WeatherService>()
-                  .currentWeather
-                  ?.countryCode
-                  .toUpperCase() ??
-              "US";
-          String? countryName = context.select<WeatherService, String?>(
-              (ws) => ws.currentWeather?.countryName);
-          var firstChar = countryCode.codeUnitAt(0) - 0x41 + 0x1F1E6;
-          var secondChar = countryCode.codeUnitAt(1) - 0x41 + 0x1F1E6;
-          String flag =
-              String.fromCharCode(firstChar) + String.fromCharCode(secondChar);
-          return Text(
-            "$flag ${countryName ?? countryCode}",
-            style: Theme.of(context).textTheme.bodyLarge,
-          );
-        }),
-        Text(
-          context.select<WeatherService, String>(
-            (value) => value.currentWeather?.city ?? "Tidak Ditemukan",
-          ),
-          style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-        ),
+        _buildExpandedCountryText(),
+        _buildExpandedCityText(),
         const SizedBox(
           height: 8,
         ),
-        Builder(
-          builder: (context) {
-            var cWeather = context.watch<WeatherService>().currentWeather;
-            if (cWeather != null) {
-              return SvgPicture.asset(
-                cWeather.weatherCode.getWeatherIcon(cWeather.isDay),
-                colorFilter: ColorFilter.mode(
-                  Theme.of(context).colorScheme.primary,
-                  BlendMode.srcIn,
-                ),
-                height: 128,
-                width: 128,
-              );
-            } else {
-              return const SizedBox.square(dimension: 128);
-            }
-          },
-        ),
+        _buildExpandedWeatherIcon(),
         const SizedBox(
           height: 8,
         ),
-        Text(
-          context.select<WeatherService, String>(
-            (value) => value.currentWeather?.weatherName ?? "Kosong",
-          ),
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-        ),
-        Text(
-          "${context.select<WeatherService, double>(
-                (value) => value.currentWeather?.temp ?? 0.0,
-              ).toStringFirstDecimal()}°",
-          style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-        ),
+        _buildExpandedWeatherName(context),
+        _buildExpandedTempText(context),
         SizedBox(
           height: 16,
         ),
@@ -179,6 +111,71 @@ class _MainScreenState extends State<MainScreen>
     );
   }
 
+  Builder _buildExpandedCountryText() => Builder(builder: (context) {
+        String countryCode = context
+                .watch<WeatherNotifier>()
+                .currentWeather
+                ?.countryCode
+                .toUpperCase() ??
+            "US";
+        String? countryName = context.select<WeatherNotifier, String?>(
+            (ws) => ws.currentWeather?.countryName);
+        var firstChar = countryCode.codeUnitAt(0) - 0x41 + 0x1F1E6;
+        var secondChar = countryCode.codeUnitAt(1) - 0x41 + 0x1F1E6;
+        String flag =
+            String.fromCharCode(firstChar) + String.fromCharCode(secondChar);
+        return Text(
+          "$flag ${countryName ?? countryCode}",
+          style: Theme.of(context).textTheme.bodyLarge,
+        );
+      });
+
+  Text _buildExpandedCityText() => Text(
+        context.select<WeatherNotifier, String>(
+          (value) => value.currentWeather?.city ?? "Tidak Ditemukan",
+        ),
+        style: Theme.of(context).textTheme.displaySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+      );
+
+  Builder _buildExpandedWeatherIcon() => Builder(
+        builder: (context) {
+          var cWeather = context.watch<WeatherNotifier>().currentWeather;
+          if (cWeather != null) {
+            return SvgPicture.asset(
+              cWeather.weatherCode.getWeatherIcon(cWeather.isDay),
+              colorFilter: ColorFilter.mode(
+                Theme.of(context).colorScheme.primary,
+                BlendMode.srcIn,
+              ),
+              height: 128,
+              width: 128,
+            );
+          } else {
+            return const SizedBox.square(dimension: 128);
+          }
+        },
+      );
+
+  Text _buildExpandedWeatherName(BuildContext context) => Text(
+        context.select<WeatherNotifier, String>(
+          (value) => value.currentWeather?.weatherName ?? "Kosong",
+        ),
+        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+      );
+
+  Text _buildExpandedTempText(BuildContext context) => Text(
+        "${context.select<WeatherNotifier, double>(
+              (value) => value.currentWeather?.temp ?? 0.0,
+            ).toStringFirstDecimal()}°",
+        style: Theme.of(context).textTheme.displayMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+      );
+
   Widget _buildCompactScreen(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -186,105 +183,8 @@ class _MainScreenState extends State<MainScreen>
         SizedBox(
           height: 8,
         ),
-        Container(
-          margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-          padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainer,
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    context.select<WeatherService, String>(
-                        (value) => value.currentWeather?.city ?? ""),
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  Text(
-                    context.select<WeatherService, String>(
-                        (value) => value.currentWeather?.countryName ?? ""),
-                    style: Theme.of(context).textTheme.titleSmall,
-                  )
-                ],
-              ),
-              Builder(builder: (context) {
-                String countryCode = context
-                        .watch<WeatherService>()
-                        .currentWeather
-                        ?.countryCode
-                        .toUpperCase() ??
-                    "UN";
-                var firstChar = countryCode.codeUnitAt(0) - 0x41 + 0x1F1E6;
-                var secondChar = countryCode.codeUnitAt(1) - 0x41 + 0x1F1E6;
-                String flag = String.fromCharCode(firstChar) +
-                    String.fromCharCode(secondChar);
-                return Text(
-                  flag,
-                  style: TextStyle(fontSize: 40),
-                );
-              })
-            ],
-          ),
-        ),
-        Container(
-          margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-          padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "${context.select<WeatherService, double>(
-                          (value) => value.currentWeather?.temp ?? 0.0,
-                        ).toStringFirstDecimal()}°",
-                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface,
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  Text(
-                    context.select<WeatherService, String>(
-                      (value) => value.currentWeather?.weatherName ?? "Kosong",
-                    ),
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                  ),
-                ],
-              ),
-              Builder(
-                builder: (context) {
-                  var cWeather = context.watch<WeatherService>().currentWeather;
-                  if (cWeather != null) {
-                    return SvgPicture.asset(
-                      cWeather.weatherCode.getWeatherIcon(cWeather.isDay),
-                      colorFilter: ColorFilter.mode(
-                        Theme.of(context).colorScheme.primary,
-                        BlendMode.srcIn,
-                      ),
-                      fit: BoxFit.cover,
-                      height: 100,
-                      width: 100,
-                    );
-                  } else {
-                    return const SizedBox.square(dimension: 128);
-                  }
-                },
-              ),
-            ],
-          ),
-        ),
+        _buildCompactLocation(),
+        _buildCompactWeather(),
         SizedBox(
           height: 8,
         ),
@@ -295,11 +195,119 @@ class _MainScreenState extends State<MainScreen>
     );
   }
 
+
+
+  Container _buildCompactLocation() => Container(
+        margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+        padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainer,
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildCompactCityAndCountry(),
+            _buildCompactFlag()
+          ],
+        ),
+      );
+
+  Column _buildCompactCityAndCountry() => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                context.select<WeatherNotifier, String>(
+                    (value) => value.currentWeather?.city ?? ""),
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              Text(
+                context.select<WeatherNotifier, String>(
+                    (value) => value.currentWeather?.countryName ?? ""),
+                style: Theme.of(context).textTheme.titleSmall,
+              )
+            ],
+          );
+
+  Builder _buildCompactFlag() =>
+    Builder(builder: (context) {
+      String countryCode = context
+          .watch<WeatherNotifier>()
+          .currentWeather
+          ?.countryCode
+          .toUpperCase() ??
+          "UN";
+      var firstChar = countryCode.codeUnitAt(0) - 0x41 + 0x1F1E6;
+      var secondChar = countryCode.codeUnitAt(1) - 0x41 + 0x1F1E6;
+      String flag = String.fromCharCode(firstChar) +
+          String.fromCharCode(secondChar);
+      return Text(
+        flag,
+        style: TextStyle(fontSize: 40),
+      );
+    });
+
+  Container _buildCompactWeather() => Container(
+        margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+        padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.primaryContainer,
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "${context.select<WeatherNotifier, double>(
+                        (value) => value.currentWeather?.temp ?? 0.0,
+                      ).toStringFirstDecimal()}°",
+                  style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                Text(
+                  context.select<WeatherNotifier, String>(
+                    (value) => value.currentWeather?.weatherName ?? "Kosong",
+                  ),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                ),
+              ],
+            ),
+            Builder(
+              builder: (context) {
+                var cWeather = context.watch<WeatherNotifier>().currentWeather;
+                if (cWeather != null) {
+                  return SvgPicture.asset(
+                    cWeather.weatherCode.getWeatherIcon(cWeather.isDay),
+                    colorFilter: ColorFilter.mode(
+                      Theme.of(context).colorScheme.primary,
+                      BlendMode.srcIn,
+                    ),
+                    fit: BoxFit.cover,
+                    height: 100,
+                    width: 100,
+                  );
+                } else {
+                  return const SizedBox.square(dimension: 128);
+                }
+              },
+            ),
+          ],
+        ),
+      );
+
   AppBar _buildAppBar(BuildContext context) {
     return AppBar(
       title: Text(
         DateFormat("d MMM y, H:mm")
-            .format(context.watch<WeatherService>().currentWeather?.time ??
+            .format(context.watch<WeatherNotifier>().currentWeather?.time ??
                 DateTime.now())
             .toString(),
         style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -307,52 +315,71 @@ class _MainScreenState extends State<MainScreen>
             ),
       ),
       actions: [
-        IconButton(
-          style: IconButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-          ),
-          onPressed: () => context
-              .read<WeatherService>()
-              .updateCurrentLocationWeather()
-              .catchError((e) {
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(e.toString()),
-                ),
-              );
-            }
-            return WeatherCode.none;
-          }),
-          icon: SvgPicture.asset(
-            "svgs/current-location.svg",
-            height: 24,
-            width: 24,
-            colorFilter: ColorFilter.mode(
-              Theme.of(context).colorScheme.onSecondaryContainer,
-              BlendMode.srcIn,
-            ),
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.only(right: 8),
-          child: IconButton(
-            style: IconButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
-            ),
-            onPressed: () => Navigator.pushNamed(context, '/city'),
-            icon: SvgPicture.asset(
-              "svgs/search-location.svg",
-              height: 24,
-              width: 24,
-              colorFilter: ColorFilter.mode(
-                Theme.of(context).colorScheme.onSecondaryContainer,
-                BlendMode.srcIn,
-              ),
-            ),
-          ),
-        ),
+        _buildCurrentLocationAction(context),
+        _buildSearchLocationAction(context),
+        _buildSettingsAction(),
       ],
     );
   }
+
+  Widget _buildCurrentLocationAction(BuildContext context) => IconButton(
+        style: IconButton.styleFrom(
+          backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+        ),
+        onPressed: () => context
+            .read<WeatherNotifier>()
+            .updateCurrentLocationWeather()
+            .catchError((e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(e.toString()),
+              ),
+            );
+          }
+          return WeatherCode.none;
+        }),
+        icon: SvgPicture.asset(
+          "svgs/current-location.svg",
+          height: 24,
+          width: 24,
+          colorFilter: ColorFilter.mode(
+            Theme.of(context).colorScheme.onSecondaryContainer,
+            BlendMode.srcIn,
+          ),
+        ),
+        tooltip: "Get Current Location Weather",
+      );
+
+  Widget _buildSearchLocationAction(BuildContext context) => IconButton(
+        style: IconButton.styleFrom(
+          backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+        ),
+        onPressed: () => Navigator.pushNamed(context, '/city'),
+        icon: SvgPicture.asset(
+          "svgs/search-location.svg",
+          height: 24,
+          width: 24,
+          colorFilter: ColorFilter.mode(
+            Theme.of(context).colorScheme.onSecondaryContainer,
+            BlendMode.srcIn,
+          ),
+        ),
+        tooltip: "Search For Location Weather",
+      );
+
+  Widget _buildSettingsAction() => Padding(
+        padding: EdgeInsets.only(right: 8),
+        child: IconButton(
+          onPressed: () {},
+          style: IconButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+          ),
+          icon: Icon(
+            Icons.settings,
+            color: Theme.of(context).colorScheme.onSecondaryContainer,
+          ),
+          tooltip: "Settings",
+        ),
+      );
 }

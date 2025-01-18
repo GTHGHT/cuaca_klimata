@@ -2,7 +2,7 @@ import 'package:cuaca_klimata/utilities/double_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../services/weather_service.dart';
+import '../../services/notifier/weather_notifier.dart';
 import 'weather_info_item.dart';
 
 class WeatherDetailWidget extends StatelessWidget {
@@ -41,7 +41,7 @@ class WeatherDetailWidget extends StatelessWidget {
             children: [
               Builder(builder: (context) {
                 double? feelsLike =
-                    context.watch<WeatherService>().currentWeather?.feelsLike;
+                    context.watch<WeatherNotifier>().currentWeather?.feelsLike;
                 return WeatherInfoItem(
                   iconPath: feelsLike != null
                       ? "svgs/thermometer.svg"
@@ -49,7 +49,7 @@ class WeatherDetailWidget extends StatelessWidget {
                   label: feelsLike != null ? "Feels Like" : "Coordinate",
                   value: feelsLike != null
                       ? "${feelsLike.toStringFirstDecimal()}°"
-                      : context.select<WeatherService, String>((value) =>
+                      : context.select<WeatherNotifier, String>((value) =>
                   "${value.currentWeather?.latitude};${value.currentWeather?.longitude}"),
                   circleColor: circleColor,
                   iconColor: iconColor,
@@ -59,7 +59,7 @@ class WeatherDetailWidget extends StatelessWidget {
                 iconPath: 'svgs/cloud-cover.svg',
                 label: "Cloud Cover",
                 value:
-                "${context.watch<WeatherService>().currentWeather?.cloudCover}%",
+                "${context.watch<WeatherNotifier>().currentWeather?.cloudCover}%",
                 circleColor: circleColor,
                 iconColor: iconColor,
               ),
@@ -74,7 +74,7 @@ class WeatherDetailWidget extends StatelessWidget {
                 iconPath: 'svgs/wind-speed.svg',
                 label: "Wind Speed",
                 value:
-                "${context.watch<WeatherService>().currentWeather?.windSpeed} km/h",
+                "${context.watch<WeatherNotifier>().currentWeather?.windSpeed} km/h",
                 circleColor: circleColor,
                 iconColor: iconColor,
               ),
@@ -82,7 +82,7 @@ class WeatherDetailWidget extends StatelessWidget {
                 iconPath: 'svgs/wind-direction.svg',
                 label: "Wind Direction",
                 value:
-                "${context.watch<WeatherService>().currentWeather?.windDirection}°",
+                "${context.watch<WeatherNotifier>().currentWeather?.windDirection}°",
                 circleColor: circleColor,
                 iconColor: iconColor,
               ),
@@ -96,7 +96,7 @@ class WeatherDetailWidget extends StatelessWidget {
               WeatherInfoItem(
                 iconPath: 'svgs/humidity.svg',
                 label: "Humidity",
-                value: "${context.watch<WeatherService>().currentWeather?.humidity}%",
+                value: "${context.watch<WeatherNotifier>().currentWeather?.humidity}%",
                 circleColor: circleColor,
                 iconColor: iconColor,
               ),
@@ -104,7 +104,7 @@ class WeatherDetailWidget extends StatelessWidget {
                 iconPath: 'svgs/pressure.svg',
                 label: "Pressure",
                 value:
-                "${context.watch<WeatherService>().currentWeather?.pressure} hPa",
+                "${context.watch<WeatherNotifier>().currentWeather?.pressure} hPa",
                 circleColor: circleColor,
                 iconColor: iconColor,
               ),

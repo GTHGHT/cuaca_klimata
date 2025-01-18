@@ -46,10 +46,10 @@ class HourlyWeatherChart extends StatelessWidget {
                               Theme.of(context).brightness,
                             );
                     return FlDotCirclePainter(
-                      radius: 6,
+                      radius: 8,
                       color: colorScheme.primaryContainer,
                       strokeWidth: 3,
-                      strokeColor: colorScheme.primary,
+                      strokeColor: colorScheme.secondary,
                     );
                   }),
             ),

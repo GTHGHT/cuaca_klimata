@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
-import 'data_class/weather_forecast.dart';
-import 'interface/weather_integration.dart';
+import '../data_class/weather_forecast.dart';
+import '../interface/weather_integration.dart';
 
-class WeatherForecastService extends ChangeNotifier {
+class WeatherForecastNotifier extends ChangeNotifier {
   WeatherForecast? weatherForecast;
   final WeatherIntegration? weatherIntegration;
 
-  bool loading = true;
+  bool loading;
 
-  WeatherForecastService(this.weatherIntegration) : loading = false;
+  WeatherForecastNotifier(this.weatherIntegration) : loading = false;
 
   Future<void> updateWeatherForecast(double latitude, double longitude) async {
     WeatherIntegration? wi = weatherIntegration;

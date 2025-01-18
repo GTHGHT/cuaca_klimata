@@ -1,11 +1,13 @@
+import 'package:cuaca_klimata/utilities/constants.dart';
 import 'package:flutter/material.dart';
 
 class ColorSchemeNotifier extends ChangeNotifier {
   late ColorScheme _colorScheme;
   late ColorScheme _darkColorScheme;
 
-  ColorSchemeNotifier(ColorScheme colorScheme, ColorScheme darkColorScheme)
-      : _colorScheme = colorScheme, _darkColorScheme = darkColorScheme;
+  ColorSchemeNotifier([ColorScheme? colorScheme, ColorScheme? darkColorScheme])
+      : _colorScheme = colorScheme ?? kFogCS,
+        _darkColorScheme = darkColorScheme ?? kFogDarkCS;
 
   ColorScheme get colorScheme => _colorScheme;
 
